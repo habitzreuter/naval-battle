@@ -11,10 +11,12 @@ SRC_FILES=$(wildcard *.c)
 BIN_NAME=naval_battle.out
 
 all:
+	@cppcheck -q ${SRC_FILES}
 	@gcc -std=c99 ${WARNING_FLAGS} ${SRC_FILES} -o ${BIN_NAME}
 
-run:
+run: all
 	./${BIN_NAME}
 
 clean:
 	rm ${BIN_NAME} *.o
+
