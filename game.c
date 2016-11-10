@@ -39,11 +39,15 @@ typedef struct {
 void print_board(uint8_t size, uint8_t board[size][size])
 {
 	for(uint8_t i = 0; i < size + 1; i++) {
-		if(i != 0) printf("%c --> ", 64 + (size - i - 1));
-		else printf("      ");
+
+		// Print row number
+		if(i != 0) printf("%2d --> ", i);
+		else printf("       ");
+
 		for(uint8_t j = 0; j < size; j++) {
 			if(i == 0) {
-				printf("%2u ", j+1);
+				// Print column in the first line
+				printf("%2c ", (65 + j));
 			} else {
 				char c;
 				switch (board[i][j]) {
