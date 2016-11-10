@@ -12,10 +12,10 @@ typedef enum {
 } bool;
 
 enum ships {
-	AIRCRAFT_CARRIER = 0,
-	DESTROYER = 1,
-	CRUZER = 2,
-	SUBMARINE = 3
+	AIRCRAFT_CARRIER = 1,
+	DESTROYER = 2,
+	CRUZER = 3,
+	SUBMARINE = 4
 };
 
 typedef struct {
@@ -51,9 +51,21 @@ void print_board(uint8_t size, uint8_t board[size][size])
 				printf("%2c ", (65 + j));
 			} else {
 				char c;
-				switch (board[i][j]) {
+				switch (board[i - 1][j]) {
 				case 0:
 					c = '~';
+					break;
+				case 1:
+					c = 'P';
+					break;
+				case 2:
+					c = 'D';
+					break;
+				case 3:
+					c = 'C';
+					break;
+				case 4:
+					c = 'S';
 					break;
 				}
 				printf("%2c ", c);
@@ -66,16 +78,16 @@ void print_board(uint8_t size, uint8_t board[size][size])
 void stringify_ship_type(enum ships type, char *destination)
 {
 	switch(type) {
-	case 0:
+	case 1:
 		strcpy(destination, "Porta Aviões");
 		break;
-	case 1:
+	case 2:
 		strcpy(destination, "Destroyer");
 		break;
-	case 2:
+	case 3:
 		strcpy(destination, "Cruzador");
 		break;
-	case 3:
+	case 4:
 		strcpy(destination, "Submarino");
 		break;
 	}
@@ -162,6 +174,22 @@ void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
 	*row = tmp_row - 1;
 }
 
+void update_board(uint8_t board_size, uint8_t board[board_size][board_size], ship_st ship)
+{
+	uint8_t in_row = ship.initial_row, in_col = ship.initial_column;
+
+	switch(ship.direction) {
+	case 0:
+		for(uint8_t i = 0; i < ship.size; i++)
+			board[in_row][in_col + i] = ship.type;
+		break;
+	case 1:
+		for(uint8_t i = 0; i < ship.size; i++)
+			board[in_row + i][in_col] = ship.type;
+		break;
+	}
+}
+
 /*
  * Prompts player to select where to place the ships
  */
@@ -183,6 +211,9 @@ void set_ships(player_st *player, uint8_t board_size)
 					&(ship->initial_column),
 					&(ship->direction));
 		} while(!valid_position(board_size, player->board, *ship));
+
+		update_board(board_size, player->board, *ship);
+
 	}
 }
 
