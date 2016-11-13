@@ -47,13 +47,13 @@ void print_board(uint8_t size, uint8_t board[size][size])
 {
 	for(uint8_t i = 0; i < size + 1; i++) {
 
-		// Print row number
+		// Imprime número da linha
 		if(i != 0) printf("%2d --> ", i);
 		else printf("       ");
 
 		for(uint8_t j = 0; j < size; j++) {
 			if(i == 0) {
-				// Print column in the first line
+				// Imprime letra da coluna na primeira linha
 				printf("%2c ", (65 + j));
 			} else {
 				char c;
@@ -102,8 +102,8 @@ void stringify_ship_type(enum ships type, char *destination)
 }
 
 /**
- * Verify if there are no other ships in the coordinates passed by the user
- * Returns 'true' if there is a superposition
+ * Verifica se as coordenadas informadas pelo usuário não farão o navio se
+ * sobrepor a outro navio já colocado
  */
 bool ship_superposition(uint8_t board_size, uint8_t ship_size,
 		uint8_t board[board_size][board_size], uint8_t row,
@@ -129,8 +129,8 @@ bool ship_superposition(uint8_t board_size, uint8_t ship_size,
 }
 
 /**
- * Verify if coordinates passed by the user won't set the ship in a position
- * inside the board
+ * Verifica se coordenadas informadas pelo usuário não vão colocar o navio
+ * fora dos limites do tabuleiro
  */
 bool valid_ship_bounds(uint8_t board_size, uint8_t ship_size, uint8_t row,
 		uint8_t col, bool direction)
@@ -155,7 +155,7 @@ bool valid_ship_bounds(uint8_t board_size, uint8_t ship_size, uint8_t row,
 }
 
 /**
- * Test if passed coordinates are inside the board.
+ * Testa se coordenadas estão dentro dos limites do tabuleiro
  */
 bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
 {
@@ -207,7 +207,7 @@ void update_board(uint8_t board_size, uint8_t board[board_size][board_size], shi
 }
 
 /*
- * Prompts player to select where to place the ships
+ * Seleção da posição dos navios
  */
 void set_ships(player_st *player, uint8_t board_size)
 {
@@ -234,8 +234,8 @@ void set_ships(player_st *player, uint8_t board_size)
 }
 
 /**
- * Create variables with defaut values
- * TODO: use this to configure game difficulty
+ * Inicializa estruturas
+ * TODO: Usar isso para configurar dificuldade do jogo
  */
 game_st set_default_values()
 {

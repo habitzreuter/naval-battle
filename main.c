@@ -5,7 +5,7 @@
 
 int main()
 {
-	setlocale(LC_ALL,"portuguese"); // Configure portuguese characters
+	setlocale(LC_ALL,"portuguese"); // Configura caracteres em português
 
 	game_new();
 
