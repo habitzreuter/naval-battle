@@ -162,6 +162,12 @@ bool valid_position(uint8_t board_size, uint8_t board[board_size][board_size],
 		&& valid_coordinates(board_size, row, col);
 }
 
+void convert_coords_to_index(char tmp_col, uint16_t tmp_row, uint16_t *col, uint16_t *row)
+{
+	*col = (uint16_t) toupper(tmp_col) - 65;
+	*row = tmp_row - 1;
+}
+
 void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
 {
 	uint16_t tmp_row, tmp_direction;
@@ -170,8 +176,7 @@ void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
 	scanf("%hu %c %hu", &tmp_row, &tmp_col, &tmp_direction);
 
 	*direction = tmp_direction;
-	*col = (uint16_t) tmp_col - 65;
-	*row = tmp_row - 1;
+	convert_coords_to_index(tmp_col, tmp_row, col, row);
 }
 
 void update_board(uint8_t board_size, uint8_t board[board_size][board_size], ship_st ship)
