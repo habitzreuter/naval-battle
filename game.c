@@ -5,6 +5,9 @@
 
 #define MAX_BOARD_SIZE 100
 #define MAX_SHIPS 12
+#define MAX_NAME_SIZE 31
+
+#define MISSED_SHOT 255
 
 typedef enum {
 	true = 1,
@@ -26,9 +29,12 @@ typedef struct {
 } ship_st;
 
 typedef struct {
+	char name[MAX_NAME_SIZE];
 	uint16_t score;
+	uint16_t left_shots;
 	ship_st ships[MAX_SHIPS];
 	uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE];
+	uint8_t enemy_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE];
 } player_st;
 
 typedef struct {
@@ -67,6 +73,8 @@ void print_board(uint8_t size, uint8_t board[size][size])
 				case 4:
 					c = 'S';
 					break;
+				case MISSED_SHOT:
+					c = 'X';
 				}
 				printf("%2c ", c);
 			}
@@ -146,6 +154,9 @@ bool valid_ship_bounds(uint8_t board_size, uint8_t ship_size, uint8_t row,
 	return status;
 }
 
+/**
+ * Test if passed coordinates are inside the board.
+ */
 bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
 {
 	return !(row > board_size || col > board_size);
@@ -233,7 +244,7 @@ game_st set_default_values()
 	ship_st cruzer= {2, -1, -1, 0, CRUZER};
 	ship_st submarine = {1, -1, -1, 0, SUBMARINE};
 	
-	player_st player = {0, {
+	player_st player = {"Jogador", 0, 15,{
 		aircraft_carrier,
 		destroyer,
 		destroyer,
@@ -246,16 +257,38 @@ game_st set_default_values()
 		submarine,
 		submarine,
 		submarine
-	}, {{0}}};
+	}, {{0}}, {{0}}};
 
 	game_st game = {0, 15, player, player};
 	return game;
+}
+
+void shot_try(uint8_t board_size, player_st *player, player_st *enemy)
+{
+	uint16_t tmp_row, row, col;
+	char tmp_col;
+
+	// Le e valida coordenadas
+	do {
+		printf("%s, insira as coordenadas do tiro: ", player->name);
+		scanf("%c %hu", &tmp_col, &tmp_row);
+		convert_coords_to_index(tmp_col, tmp_row, &row, &col);
+	} while(!valid_coordinates(board_size, row, col));
+
+	// Caso hava um navio inimigo nas coordenadas indicadas
+	if(enemy->board[row][col] != 0)
+		player->enemy_board[row][col] = enemy->board[row][col];
+	else player->enemy_board[row][col] = MISSED_SHOT;
 }
 
 void game_new()
 {
 	game_st game = set_default_values();
 	set_ships(&game.player1, game.board_size);
+	set_ships(&game.player2, game.board_size);
+
+	shot_try(game.board_size, &game.player1, &game.player2);
+	print_board(game.board_size, game.player1.enemy_board);
 
 }
 
