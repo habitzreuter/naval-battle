@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdio_ext.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
@@ -43,8 +44,10 @@ typedef struct {
 	player_st player1, player2;
 } game_st;
 
-void print_board(uint8_t size, uint8_t board[size][size])
+void print_board(uint8_t size, uint8_t *board)
 {
+	char c;
+	uint8_t content;
 	for(uint8_t i = 0; i < size + 1; i++) {
 
 		// Imprime número da linha
@@ -56,8 +59,8 @@ void print_board(uint8_t size, uint8_t board[size][size])
 				// Imprime letra da coluna na primeira linha
 				printf("%2c ", (65 + j));
 			} else {
-				char c;
-				switch (board[i - 1][j]) {
+				content = *(board + MAX_BOARD_SIZE * (i - 1) + j);
+				switch (content) {
 				case 0:
 					c = '~';
 					break;
@@ -185,23 +188,24 @@ void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
 	char tmp_col;
 
 	scanf("%hu %c %hu", &tmp_row, &tmp_col, &tmp_direction);
+	__fpurge(stdin);
 
 	*direction = tmp_direction;
 	convert_coords_to_index(tmp_col, tmp_row, col, row);
 }
 
-void update_board(uint8_t board_size, uint8_t board[board_size][board_size], ship_st ship)
+void update_board(uint8_t *board, ship_st ship)
 {
 	uint8_t in_row = ship.initial_row, in_col = ship.initial_column;
 
 	switch(ship.direction) {
 	case 0:
 		for(uint8_t i = 0; i < ship.size; i++)
-			board[in_row][in_col + i] = ship.type;
+			*(board + MAX_BOARD_SIZE * in_row + in_col + i) = ship.type;
 		break;
 	case 1:
 		for(uint8_t i = 0; i < ship.size; i++)
-			board[in_row + i][in_col] = ship.type;
+			*(board + MAX_BOARD_SIZE * (in_row + i) + in_col) = ship.type;
 		break;
 	}
 }
@@ -218,7 +222,7 @@ void set_ships(player_st *player, uint8_t board_size)
 		ship_st *ship = &(player->ships[i]);
 
 		stringify_ship_type(ship->type, ship_name);
-		print_board(board_size, player->board);
+		print_board(board_size, &(player->board[0][0]));
 
 		do {
 			printf("Coordenada inicial para o %s (linha, coluna e direção): ", ship_name);
@@ -228,8 +232,7 @@ void set_ships(player_st *player, uint8_t board_size)
 					&(ship->direction));
 		} while(!valid_position(board_size, player->board, *ship));
 
-		update_board(board_size, player->board, *ship);
-
+		update_board(&(player->board[0][0]), *ship);
 	}
 }
 
@@ -272,7 +275,8 @@ void shot_try(uint8_t board_size, player_st *player, player_st *enemy)
 	do {
 		printf("%s, insira as coordenadas do tiro: ", player->name);
 		scanf("%c %hu", &tmp_col, &tmp_row);
-		convert_coords_to_index(tmp_col, tmp_row, &row, &col);
+		__fpurge(stdin);
+		convert_coords_to_index(tmp_col, tmp_row, &col, &row);
 	} while(!valid_coordinates(board_size, row, col));
 
 	// Caso hava um navio inimigo nas coordenadas indicadas
@@ -288,7 +292,7 @@ void game_new()
 	set_ships(&game.player2, game.board_size);
 
 	shot_try(game.board_size, &game.player1, &game.player2);
-	print_board(game.board_size, game.player1.enemy_board);
+	print_board(game.board_size, &(game.player1.enemy_board[0][0]));
 
 }
 
