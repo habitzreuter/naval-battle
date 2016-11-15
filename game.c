@@ -3,17 +3,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include "player.h"
 
 #define MAX_BOARD_SIZE 100
 #define MAX_SHIPS 12
 #define MAX_NAME_SIZE 31
 
 #define MISSED_SHOT 255
-
-typedef enum {
-	true = 1,
-	false = 0
-} bool;
 
 enum ships {
 	AIRCRAFT_CARRIER = 1,
@@ -44,6 +41,9 @@ typedef struct {
 	player_st player1, player2;
 } game_st;
 
+/*
+ * Imprime tabuleiro na tela
+ */
 void print_board(uint8_t size, uint8_t *board)
 {
 	char c;
@@ -86,6 +86,9 @@ void print_board(uint8_t size, uint8_t *board)
 	}
 }
 
+/**
+ * Retorna string correspondente ao número do navio
+ */
 void stringify_ship_type(enum ships type, char *destination)
 {
 	switch(type) {
@@ -165,6 +168,10 @@ bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
 	return !(row > board_size || col > board_size);
 }
 
+/**
+ * Verifica se coordenadas especificadas para um determinado navio são
+ * válidas
+ */
 bool valid_position(uint8_t board_size, uint8_t board[board_size][board_size],
 		ship_st ship)
 {
@@ -176,24 +183,18 @@ bool valid_position(uint8_t board_size, uint8_t board[board_size][board_size],
 		&& valid_coordinates(board_size, row, col);
 }
 
+/**
+ * Converte coordenadas para índices da matriz do tabuleiro
+ */
 void convert_coords_to_index(char tmp_col, uint16_t tmp_row, uint16_t *col, uint16_t *row)
 {
 	*col = (uint16_t) toupper(tmp_col) - 65;
 	*row = tmp_row - 1;
 }
 
-void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
-{
-	uint16_t tmp_row, tmp_direction;
-	char tmp_col;
-
-	scanf("%hu %c %hu", &tmp_row, &tmp_col, &tmp_direction);
-	__fpurge(stdin);
-
-	*direction = tmp_direction;
-	convert_coords_to_index(tmp_col, tmp_row, col, row);
-}
-
+/**
+ * Insere navio no tabuleiro
+ */
 void update_board(uint8_t *board, ship_st ship)
 {
 	uint8_t in_row = ship.initial_row, in_col = ship.initial_column;
@@ -266,6 +267,9 @@ game_st set_default_values()
 	return game;
 }
 
+/**
+ * Realiza uma tentativa de tiro
+ */
 void shot_try(uint8_t board_size, player_st *player, player_st *enemy)
 {
 	uint16_t tmp_row, row, col;
