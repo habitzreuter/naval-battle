@@ -1,10 +1,17 @@
-#include <stdio.h>
+/**
+ * Batalha Naval
+ *
+ * Autor: Marco Antônio Habitzreuter (marco.habitzreuter@ufrgs.br)
+ *				      (mahabitzreuter@inf.ufrgs.br)
+ */
+
 #include <stdio_ext.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include "player.h"
+#include "ai.h"
 
 #define MAX_BOARD_SIZE 100
 #define MAX_SHIPS 12
@@ -214,7 +221,7 @@ void update_board(uint8_t *board, ship_st ship)
 /*
  * Seleção da posição dos navios
  */
-void set_ships(player_st *player, uint8_t board_size)
+void set_ships(player_st *player, uint8_t board_size, bool human)
 {
 	uint8_t ship_count = sizeof(player->ships) / sizeof(ship_st);
 	char ship_name[20];
@@ -222,15 +229,22 @@ void set_ships(player_st *player, uint8_t board_size)
 	for(uint8_t i = 0; i < ship_count; i++) {
 		ship_st *ship = &(player->ships[i]);
 
-		stringify_ship_type(ship->type, ship_name);
-		print_board(board_size, &(player->board[0][0]));
-
 		do {
-			printf("Coordenada inicial para o %s (linha, coluna e direção): ", ship_name);
-			scan_ship_position(
+			if(human) {
+				stringify_ship_type(ship->type, ship_name);
+				print_board(board_size, &(player->board[0][0]));
+
+				printf("Coordenada inicial para o %s (linha, coluna e direção): ", ship_name);
+				scan_ship_position(
 					&(ship->initial_row),
 					&(ship->initial_column),
 					&(ship->direction));
+			} else ai_generate_ship_coords(
+					board_size,
+					&(ship->initial_row),
+					&(ship->initial_column),
+					&(ship->direction));
+
 		} while(!valid_position(board_size, player->board, *ship));
 
 		update_board(&(player->board[0][0]), *ship);
@@ -292,11 +306,12 @@ void shot_try(uint8_t board_size, player_st *player, player_st *enemy)
 void game_new()
 {
 	game_st game = set_default_values();
-	set_ships(&game.player1, game.board_size);
-	set_ships(&game.player2, game.board_size);
+	//set_ships(&game.player1, game.board_size, true);
+	set_ships(&game.player2, game.board_size, false);
 
-	shot_try(game.board_size, &game.player1, &game.player2);
-	print_board(game.board_size, &(game.player1.enemy_board[0][0]));
+	//shot_try(game.board_size, &game.player1, &game.player2);
+	//print_board(game.board_size, &(game.player1.enemy_board[0][0]));
+	print_board(game.board_size, &(game.player2.board[0][0]));
 
 }
 

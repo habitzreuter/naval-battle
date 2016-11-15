@@ -1,7 +1,7 @@
 #
-# Naval Battle game
+# Batalha Naval
 #
-# Author: Marco Antônio Habitzreuter (mahabitzreuter@inf.ufrgs.br)
+# Autor: Marco Antônio Habitzreuter (mahabitzreuter@inf.ufrgs.br)
 # 				     (marco.habitzreuter@ufrgs.br)
 #
 
