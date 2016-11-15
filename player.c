@@ -1,8 +1,8 @@
 /**
  * Batalha Naval
  *
- * Autor: Marco Antônio Habitzreuter (marco.habitzreuter@ufrgs.br)
- *				     (mahabitzreuter@inf.ufrgs.br)
+ * Autor: Marco Antônio Habitzreuter	(marco.habitzreuter@ufrgs.br)
+ *					(mahabitzreuter@inf.ufrgs.br)
  *
  * Funções relacionadas à entrada de dados de um jogador humano
  *

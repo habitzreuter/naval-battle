@@ -1,8 +1,8 @@
 #
 # Batalha Naval
 #
-# Autor: Marco Antônio Habitzreuter (mahabitzreuter@inf.ufrgs.br)
-# 				     (marco.habitzreuter@ufrgs.br)
+# Autor: Marco Antônio Habitzreuter 	(mahabitzreuter@inf.ufrgs.br)
+# 					(marco.habitzreuter@ufrgs.br)
 #
 
 WARNING_FLAGS = -Wall -Wextra
