@@ -118,22 +118,23 @@ void stringify_ship_type(enum ships type, char *destination)
  * Verifica se as coordenadas informadas pelo usuário não farão o navio se
  * sobrepor a outro navio já colocado
  */
-bool ship_superposition(uint8_t board_size, uint8_t ship_size,
-		uint8_t board[board_size][board_size], uint8_t row,
+bool ship_superposition(uint8_t ship_size, uint8_t *board, uint8_t row,
 		uint8_t col, bool direction)
 {
 	bool status = true;
 	uint8_t empty_cell = ship_size;
+	uint8_t cell_content;
 
-	switch(direction) {
-	case 1:
-		for(uint8_t i = 0; i < ship_size; i++)
-			if(board[row + i][col] != 0) empty_cell--;
-		break;
-	case 0:
-		for(uint8_t i = 0; i < ship_size; i++)
-			if(board[row][col + i] != 0) empty_cell--;
-		break;
+	for(uint8_t i = 0; i < ship_size; i++) {
+		switch(direction) {
+		case 0:
+			cell_content = *(board + MAX_BOARD_SIZE * row + col + i);
+			break;
+		case 1:
+			cell_content = *(board + MAX_BOARD_SIZE * (row + i) + col);
+			break;
+		}
+		if(cell_content != 0) empty_cell--;
 	}
 
 	if(empty_cell == ship_size) status = false;
@@ -179,13 +180,13 @@ bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
  * Verifica se coordenadas especificadas para um determinado navio são
  * válidas
  */
-bool valid_position(uint8_t board_size, uint8_t board[board_size][board_size],
+bool valid_position(uint8_t board_size, uint8_t *board,
 		ship_st ship)
 {
 	uint8_t size = ship.size, row = ship.initial_row,
 		col = ship.initial_column, direction = ship.direction;
 
-	return !ship_superposition(board_size, size, board, row, col, direction)
+	return !ship_superposition(size, board, row, col, direction)
 		&& valid_ship_bounds(board_size, size, row, col, direction)
 		&& valid_coordinates(board_size, row, col);
 }
@@ -245,7 +246,7 @@ void set_ships(player_st *player, uint8_t board_size, bool human)
 					&(ship->initial_column),
 					&(ship->direction));
 
-		} while(!valid_position(board_size, player->board, *ship));
+		} while(!valid_position(board_size, &(player->board[0][0]), *ship));
 
 		update_board(&(player->board[0][0]), *ship);
 	}
