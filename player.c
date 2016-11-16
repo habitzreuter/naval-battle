@@ -15,7 +15,7 @@
 #include "game.h"
 
 /**
- * Lê coordenadas
+ * Lê coordenadas e direção para posicionar navio
  */
 void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
 {
@@ -26,6 +26,20 @@ void scan_ship_position(uint16_t *row, uint16_t *col, bool *direction)
 	__fpurge(stdin);
 
 	*direction = tmp_direction;
+	convert_coords_to_index(tmp_col, tmp_row, col, row);
+}
+
+/**
+ * Lê coordenadas de tiro
+ */
+void scan_shot_position(uint16_t *row, uint16_t *col)
+{
+	uint16_t tmp_row;
+	char tmp_col;
+
+	scanf("%hu %c", &tmp_row, &tmp_col);
+	__fpurge(stdin);
+
 	convert_coords_to_index(tmp_col, tmp_row, col, row);
 }
 
