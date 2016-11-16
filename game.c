@@ -173,7 +173,7 @@ bool valid_ship_bounds(uint8_t board_size, uint8_t ship_size, uint8_t row,
  */
 bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
 {
-	return !(row > board_size || col > board_size);
+	return !(row > (board_size - 1) || col > (board_size - 1));
 }
 
 /**
