@@ -27,7 +27,7 @@ enum ships {
 };
 
 typedef struct {
-	uint8_t size;
+	size_t size;
 	uint16_t initial_row, initial_column;
 	bool direction; // 1: vertical, 0: horizontal
 	enum ships type;
@@ -44,14 +44,14 @@ typedef struct {
 
 typedef struct {
 	uint32_t time;
-	uint8_t board_size;
+	size_t board_size;
 	player_st player1, player2;
 } game_st;
 
 /*
  * Imprime tabuleiro na tela
  */
-void print_board(uint8_t size, uint8_t *board)
+void print_board(size_t size, uint8_t *board)
 {
 	char c;
 	uint8_t content;
@@ -118,7 +118,7 @@ void stringify_ship_type(enum ships type, char *destination)
  * Verifica se as coordenadas informadas pelo usuário não farão o navio se
  * sobrepor a outro navio já colocado
  */
-bool ship_superposition(uint8_t ship_size, uint8_t *board, uint8_t row,
+bool ship_superposition(size_t ship_size, uint8_t *board, uint8_t row,
 		uint8_t col, bool direction)
 {
 	bool status = true;
@@ -146,7 +146,7 @@ bool ship_superposition(uint8_t ship_size, uint8_t *board, uint8_t row,
  * Verifica se coordenadas informadas pelo usuário não vão colocar o navio
  * fora dos limites do tabuleiro
  */
-bool valid_ship_bounds(uint8_t board_size, uint8_t ship_size, uint8_t row,
+bool valid_ship_bounds(size_t board_size, size_t ship_size, uint8_t row,
 		uint8_t col, bool direction)
 {
 	char status = false;
@@ -171,7 +171,7 @@ bool valid_ship_bounds(uint8_t board_size, uint8_t ship_size, uint8_t row,
 /**
  * Testa se coordenadas estão dentro dos limites do tabuleiro
  */
-bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
+bool valid_coordinates(size_t board_size, uint8_t row, uint8_t col)
 {
 	return !(row > (board_size - 1) || col > (board_size - 1));
 }
@@ -180,11 +180,11 @@ bool valid_coordinates(uint8_t board_size, uint8_t row, uint8_t col)
  * Verifica se coordenadas especificadas para um determinado navio são
  * válidas
  */
-bool valid_position(uint8_t board_size, uint8_t *board,
-		ship_st ship)
+bool valid_position(size_t board_size, uint8_t *board, ship_st ship)
 {
-	uint8_t size = ship.size, row = ship.initial_row,
-		col = ship.initial_column, direction = ship.direction;
+	size_t size = ship.size;
+	uint8_t row = ship.initial_row, col = ship.initial_column,
+		direction = ship.direction;
 
 	return !ship_superposition(size, board, row, col, direction)
 		&& valid_ship_bounds(board_size, size, row, col, direction)
@@ -222,7 +222,7 @@ void update_board(uint8_t *board, ship_st ship)
 /*
  * Seleção da posição dos navios
  */
-void set_ships(player_st *player, uint8_t board_size, bool human)
+void set_ships(player_st *player, size_t board_size, bool human)
 {
 	uint8_t ship_count = sizeof(player->ships) / sizeof(ship_st);
 	char ship_name[20];
@@ -285,7 +285,7 @@ game_st set_default_values()
 /**
  * Realiza uma tentativa de tiro
  */
-void shot_try(uint8_t board_size, player_st *player, player_st *enemy)
+void shot_try(size_t board_size, player_st *player, player_st *enemy)
 {
 	uint16_t tmp_row, row, col;
 	char tmp_col;
