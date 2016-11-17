@@ -23,17 +23,16 @@
 #define AI	false
 
 enum ships {
-	AIRCRAFT_CARRIER = 1,
-	DESTROYER = 2,
-	CRUZER = 3,
-	SUBMARINE = 4
+	AIRCRAFT_CARRIER = 5,
+	DESTROYER = 4,
+	CRUZER = 2,
+	SUBMARINE = 1
 };
 
 typedef struct {
-	size_t size;
+	size_t size; // Tamanho e tipo do navio
 	uint8_t initial_row, initial_column;
 	bool direction; // 1: vertical, 0: horizontal
-	enum ships type;
 } ship_st;
 
 typedef struct {
@@ -71,20 +70,20 @@ void print_board(size_t size, uint8_t *board)
 			} else {
 				content = *(board + MAX_BOARD_SIZE * (i - 1) + j);
 				switch (content) {
-				case 0:
-					c = '~';
-					break;
-				case 1:
+				case 5:
 					c = 'P';
 					break;
-				case 2:
+				case 4:
 					c = 'D';
 					break;
-				case 3:
+				case 2:
 					c = 'C';
 					break;
-				case 4:
+				case 1:
 					c = 'S';
+					break;
+				case 0:
+					c = '~';
 					break;
 				case MISSED_SHOT:
 					c = 'X';
@@ -102,16 +101,16 @@ void print_board(size_t size, uint8_t *board)
 void stringify_ship_type(enum ships type, char *destination)
 {
 	switch(type) {
-	case 1:
+	case 5:
 		strcpy(destination, "Porta Aviões");
 		break;
-	case 2:
+	case 4:
 		strcpy(destination, "Destroyer");
 		break;
-	case 3:
+	case 2:
 		strcpy(destination, "Cruzador");
 		break;
-	case 4:
+	case 1:
 		strcpy(destination, "Submarino");
 		break;
 	}
@@ -213,11 +212,11 @@ void update_board(uint8_t *board, ship_st ship)
 	switch(ship.direction) {
 	case 0:
 		for(uint8_t i = 0; i < ship.size; i++)
-			*(board + MAX_BOARD_SIZE * in_row + in_col + i) = ship.type;
+			*(board + MAX_BOARD_SIZE * in_row + in_col + i) = ship.size;
 		break;
 	case 1:
 		for(uint8_t i = 0; i < ship.size; i++)
-			*(board + MAX_BOARD_SIZE * (in_row + i) + in_col) = ship.type;
+			*(board + MAX_BOARD_SIZE * (in_row + i) + in_col) = ship.size;
 		break;
 	}
 }
@@ -235,7 +234,7 @@ void set_ships(player_st *player, size_t board_size, bool human)
 
 		do {
 			if(human) {
-				stringify_ship_type(ship->type, ship_name);
+				stringify_ship_type(ship->size, ship_name);
 				print_board(board_size, &(player->board[0][0]));
 
 				printf("Coordenada inicial para o %s (linha, coluna e direção): ", ship_name);
@@ -261,10 +260,10 @@ void set_ships(player_st *player, size_t board_size, bool human)
  */
 game_st set_default_values()
 {
-	ship_st aircraft_carrier = {5, -1, -1, 0, AIRCRAFT_CARRIER};
-	ship_st destroyer = {4, -1, -1, 0, DESTROYER};
-	ship_st cruzer= {2, -1, -1, 0, CRUZER};
-	ship_st submarine = {1, -1, -1, 0, SUBMARINE};
+	ship_st aircraft_carrier = {5, -1, -1, 0};
+	ship_st destroyer = {4, -1, -1, 0};
+	ship_st cruzer= {2, -1, -1, 0};
+	ship_st submarine = {1, -1, -1, 0};
 	
 	player_st player = {"Jogador", 0, 15, {
 		aircraft_carrier,
