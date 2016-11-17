@@ -16,7 +16,7 @@
 /**
  * Gera linha e coluna do tabuleiro
  */
-void ai_generate_coords(uint8_t max, uint16_t *r, uint16_t *c)
+void ai_generate_coords(uint8_t max, uint8_t *r, uint8_t *c)
 {
 	*r = rand() % (max - 1); // Gera valor entre 0 e (MAX - 1)
 	*c = rand() % (max - 1); // Gera valor entre 0 e (MAX - 1)
@@ -25,7 +25,7 @@ void ai_generate_coords(uint8_t max, uint16_t *r, uint16_t *c)
 /**
  * Gera coordenadas para posicionamento de navio (linha, coluna e direção)
  */
-void ai_generate_ship_coords(uint8_t max, uint16_t *r, uint16_t *c, bool *d)
+void ai_generate_ship_coords(uint8_t max, uint8_t *r, uint8_t *c, bool *d)
 {
 	ai_generate_coords(max, r, c);
 	*d = rand() % 2; // Gera valor TRUE ou FALSE
