@@ -148,7 +148,7 @@ void set_ships(player_st *player, size_t board_size, bool human)
 		do {
 			if(human) {
 				stringify_ship_type(ship->size, ship_name);
-				print_board(board_size, &(player->board[0][0]), player->ships);
+				//print_board(board_size, &(player->board[0][0]), player->ships);
 
 				printf("Coordenada inicial para o %s (linha, coluna e direção): ", ship_name);
 				scan_ship_position(

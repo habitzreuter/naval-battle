@@ -16,6 +16,9 @@
 #define HUMAN	true
 #define AI	false
 
+#define PLAYER	false
+#define ENEMY	true
+
 #include <stdbool.h>
 
 enum ships {
@@ -50,7 +53,7 @@ typedef struct {
 void game_new();
 void convert_coords_to_index(char, uint16_t, uint8_t*, uint8_t*);
 bool valid_coordinates(size_t, uint8_t, uint8_t);
-void print_board(size_t, uint8_t*, ship_st ships[MAX_SHIPS]);
+void print_board(size_t, player_st, bool);
 
 #endif
 

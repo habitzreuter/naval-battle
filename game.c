@@ -16,10 +16,10 @@
 /*
  * Imprime tabuleiro na tela
  */
-void print_board(size_t size, uint8_t *board, ship_st ships[MAX_SHIPS])
+void print_2d_char_array(size_t size, uint8_t *array)
 {
 	char c;
-	uint8_t index;
+
 	for(uint8_t i = 0; i < size + 1; i++) {
 
 		// Imprime número da linha
@@ -31,26 +31,89 @@ void print_board(size_t size, uint8_t *board, ship_st ships[MAX_SHIPS])
 			if(i == 0) printf("%2c ", (65 + j));
 			else {
 				// Le valor na célula do tabuleiro
-				index = *(board + MAX_BOARD_SIZE * (i - 1) + j);
-
-				// Verifica os códigos de status
-				switch(index) {
-				case NO_SHIP:
-					c = '~';
-					break;
-				case MISSED_SHOT:
-					c = 'X';
-					break;
-				default:
-					// Não é código de status, então é navio
-					c = get_ship_type(ships[index].size);
-				}
-
+				c = *(array + MAX_BOARD_SIZE * (i - 1) + j);
 				printf("%2c ", c);
 			}
 		}
 		printf("\n");
 	}
+}
+
+/**
+ * Processa os dados do tabuleiro do jogador e imprime-o na tela
+ */
+void print_player_board(size_t size, player_st player)
+{
+	ship_st *ships;
+	char c;
+	uint8_t processed_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE] = {{0}},
+		content, *board;
+	uint32_t offset;
+
+	ships = &(player.ships[0]);
+	board = &(player.board[0][0]);
+
+	// Processa tabuleiro, convertendo-o para matriz de caracteres
+	for(uint8_t i = 0; i < size; i++) {
+		for(uint8_t j = 0; j < size; j++) {
+			// Le valor na célula do tabuleiro
+			offset = MAX_BOARD_SIZE * i + j;
+			content = *(board + offset);
+
+			// Verifica os códigos de status
+			if(content == NO_SHIP) c = '~';
+			// Não é código de status, então é navio
+			else c = get_ship_type(ships[content].size);
+
+			*(&(processed_board[0][0]) + offset) = c;
+		}
+	}
+
+	// Imprime matriz processada na tela
+	print_2d_char_array(size, &(processed_board[0][0]));
+}
+
+/**
+ * Processa os dados do tabuleiro do adversário e imprime-o na tela
+ */
+void print_enemy_board(size_t size, player_st player, player_st enemy)
+{
+	ship_st *ships;
+	bool destroyed;
+	char c;
+	uint8_t processed_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE] = {{0}},
+		content, hits, *board, ship_size;
+
+	ships = &(enemy.ships[0]);
+	board = &(player.enemy_board[0][0]);
+
+	// Processa tabuleiro, convertendo-o para matriz de caracteres
+	for(uint8_t i = 0; i < size; i++) {
+		for(uint8_t j = 0; j < size; j++) {
+			// Le valor na célula do tabuleiro
+			content = *(board + MAX_BOARD_SIZE * i + j);
+
+			// Verifica os códigos de status
+			if(content == NOT_SHOT) c = '~';
+			else if(content == MISSED_SHOT) c = '*';
+			else {
+				// Não é código de status, então é navio
+				hits = ships[content].hits;
+				ship_size = ships[content].size;
+				destroyed = (hits == ship_size);
+
+				if(destroyed)
+					c = get_ship_type(ships[content].size);
+				else
+					c = 'X';
+			}
+
+			*(&(processed_board[0][0]) + MAX_BOARD_SIZE * i + j) = c;
+		}
+	}
+
+	// Imprime matriz processada na tela
+	print_2d_char_array(size, &(processed_board[0][0]));
 }
 
 /**
@@ -175,8 +238,8 @@ void game_new()
 	do {
 		shot_try(game.board_size, &game.player1, &game.player2, HUMAN);
 		shot_try(game.board_size, &game.player2, &game.player1, AI);
-		print_board(game.board_size, &(game.player2.board[0][0]), game.player2.ships);
-		print_board(game.board_size, &(game.player1.enemy_board[0][0]), game.player1.ships);
+		print_player_board(game.board_size, game.player2);
+		print_enemy_board(game.board_size, game.player1, game.player2);
 		winner = game_end(&game.player1, &game.player2);
 	} while(winner == 0);
 
