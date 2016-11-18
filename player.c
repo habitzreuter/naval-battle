@@ -8,10 +8,8 @@
  *
  */
 
-#include <stdio.h>
 #include <stdio_ext.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include "game.h"
 
 /**
