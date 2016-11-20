@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <ctype.h>
+#include <string.h>
 #include "game.h"
 #include "player.h"
 #include "ships.h"
@@ -134,6 +135,96 @@ void convert_coords_to_index(char tmp_col, uint16_t tmp_row, uint8_t *col, uint8
 }
 
 /**
+ * Realiza uma tentativa de tiro
+ */
+void shot_try(size_t board_size, player_st *player, player_st *enemy, bool human)
+{
+	uint8_t row, col, index;
+	bool ship_hits, ship_size, destroyed;
+
+	// Le e valida coordenadas
+	do {
+		if(human) {
+			printf("%s, insira as coordenadas do tiro (linha e coluna): ", player->name);
+			scan_shot_position(&row, &col);
+		} else ai_generate_coords(board_size, &row, &col);
+	} while(!valid_coordinates(board_size, row, col));
+
+	if(enemy->board[row][col] != NO_SHIP) { // Caso atinja um navio inimigo
+		player->enemy_board[row][col] = enemy->board[row][col];
+		index = enemy->board[row][col];
+		enemy->ships[index].hits++;
+
+		// Tiro certo dá um ponto e uma munição
+		player->score++, player->ammo++;
+
+		// Navio completamente destruído dá munição e score extra
+		ship_hits = enemy->ships[index].hits;
+		ship_size = enemy->ships[index].size;
+		destroyed = (ship_hits == ship_size);
+		if(destroyed) player->ammo += 3, player->score += 2;
+
+	} else {
+		// Se errou o tiro, armazena que não há navio nessa posição
+		player->enemy_board[row][col] = MISSED_SHOT;
+		player->ammo--;
+	}
+}
+
+bool all_ships_destroyed(player_st *player)
+{
+	uint8_t ship_count = MAX_SHIPS, destroyed_ship_count = 0, ship_size,
+		ship_hits;
+	bool destroyed, all_destroyed;
+
+	for(uint8_t i = 0; i < ship_count; i++) {
+		ship_size = player->ships[i].size;
+		ship_hits = player->ships[i].hits;
+		destroyed = (ship_hits == ship_size);
+		if(destroyed) destroyed_ship_count++;
+	}
+
+	if(destroyed_ship_count == ship_count) all_destroyed = true;
+	else all_destroyed = false;
+
+	return all_destroyed;
+}
+
+/**
+ * Verifica se as codições de fim de jogo foram atingidas
+ * Retorna 0 se ainda não terminou, 1 se player1 ganhou e 2 se player2 ganhou
+ */
+uint8_t game_end(player_st *player1, player_st *player2)
+{
+	uint8_t winner;
+	bool player1_without_ships, player1_without_ammo;
+	bool player2_without_ships, player2_without_ammo;
+
+	player1_without_ships = all_ships_destroyed(player1);
+	player1_without_ammo = (player1->ammo == 0);
+
+	player2_without_ships = all_ships_destroyed(player2);
+	player2_without_ammo = (player2->ammo == 0);
+
+	if(player2_without_ships) {
+		winner = 1;
+		player1->score += 10;
+	} else if(player1_without_ships) {
+		winner = 2;
+		player2->score += 10;
+	} else if(player1_without_ammo) {
+		winner = 2;
+		player2->score += 3;
+	} else if(player2_without_ammo) {
+		winner = 1;
+		player1->score += 3;
+	} else winner = 0;
+
+	return winner;
+
+}
+
+/**
  * Inicializa estruturas
  * TODO: Usar isso para configurar dificuldade do jogo
  */
@@ -143,7 +234,7 @@ game_st set_default_values()
 	ship_st destroyer = {4, 0, 0, 0, 0};
 	ship_st cruzer= {2, 0, 0, 0, 0};
 	ship_st submarine = {1, 0, 0, 0, 0};
-	
+
 	player_st player;
 	player.score = 0;
 	player.ammo = 15;
@@ -171,60 +262,10 @@ game_st set_default_values()
 	player.ships[11] = submarine;
 
 	game_st game = {0, 15, player, player};
+	strcpy(game.player1.name, "Jogador humano");
+	strcpy(game.player2.name, "Computador");
+
 	return game;
-}
-
-/**
- * Realiza uma tentativa de tiro
- */
-void shot_try(size_t board_size, player_st *player, player_st *enemy, bool human)
-{
-	uint8_t row, col, index;
-
-	// Le e valida coordenadas
-	do {
-
-		if(human) {
-			printf("%s, insira as coordenadas do tiro (linha e coluna): ", player->name);
-			scan_shot_position(&row, &col);
-		} else ai_generate_coords(board_size, &row, &col);
-
-	} while(!valid_coordinates(board_size, row, col));
-
-	if(enemy->board[row][col] != NO_SHIP) { // Caso atinja um navio inimigo
-		player->enemy_board[row][col] = enemy->board[row][col];
-		index = enemy->board[row][col];
-		enemy->ships[index].hits++;
-
-		// Se cada tiro gasta uma munição e cada acerto dá duas, então
-		// cada acerto soma uma munição
-		player->ammo++;
-
-		// Recebe 3 munições extra se navio foi completamente destruído
-		if(enemy->ships[index].hits == enemy->ships[index].size)
-			player->ammo += 3;
-
-	} else {
-		// Se errou o tiro, armazena que não há navio nessa posição
-		player->enemy_board[row][col] = MISSED_SHOT;
-		player->ammo--;
-	}
-}
-
-/**
- * Verifica se as codições de fim de jogo foram atingidas
- * Retorna 0 se ainda não terminou, 1 se player1 ganhou e 2 se player2 ganhou
- */
-uint8_t game_end(player_st *player1, player_st *player2)
-{
-	uint8_t winner;
-
-	if(player1->ammo == 0) winner = 2;
-	else if(player2->ammo == 0) winner = 1;
-	else winner = 0;
-
-	return winner;
-
 }
 
 void game_new()
@@ -236,14 +277,20 @@ void game_new()
 	set_ships(&game.player2, game.board_size, AI);
 
 	do {
-		shot_try(game.board_size, &game.player1, &game.player2, HUMAN);
-		shot_try(game.board_size, &game.player2, &game.player1, AI);
 		print_player_board(game.board_size, game.player2);
 		print_enemy_board(game.board_size, game.player1, game.player2);
+		shot_try(game.board_size, &game.player1, &game.player2, HUMAN);
+		shot_try(game.board_size, &game.player2, &game.player1, AI);
 		winner = game_end(&game.player1, &game.player2);
 	} while(winner == 0);
 
+	// Após o fim do jogo, soma munições restantes ao score do jogador
+	game.player1.score += game.player1.ammo;
+	game.player2.score += game.player2.ammo;
+
 	printf("\nGanhador: %d\n", winner);
+	printf("Pontuação de %s: %d\n", game.player1.name, game.player1.score);
+	printf("Pontuação de %s: %d\n", game.player2.name, game.player2.score);
 
 }
 
