@@ -268,7 +268,7 @@ game_st set_default_values()
 	return game;
 }
 
-void game_new()
+game_st game_new()
 {
 	game_st game = set_default_values();
 	uint8_t winner;
@@ -291,6 +291,8 @@ void game_new()
 	printf("\nGanhador: %d\n", winner);
 	printf("Pontuação de %s: %d\n", game.player1.name, game.player1.score);
 	printf("Pontuação de %s: %d\n", game.player2.name, game.player2.score);
+
+	return game;
 
 }
 
