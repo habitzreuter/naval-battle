@@ -1,6 +1,9 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
+#include <stdbool.h>
+#include "highscores.h"
+
 // Constantes de tamanhos máximos de vetores
 #define MAX_BOARD_SIZE	100
 #define MAX_SHIPS	12
@@ -18,8 +21,6 @@
 
 #define PLAYER	false
 #define ENEMY	true
-
-#include <stdbool.h>
 
 enum ships {
 	AIRCRAFT_CARRIER = 5,
