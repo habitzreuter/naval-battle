@@ -32,7 +32,7 @@ void execute_item(ITEM *item)
 void menu()
 {
 	ITEM **items, *cur;
-	int menu_op_count, end_game = 0, c, index_exit;
+	int menu_op_count, end_game = 0, c, index_exit, force_reload = 0;
 	MENU *my_menu;
 	char *menu_options[] = {
 		"Novo jogo",
@@ -52,9 +52,18 @@ void menu()
 	
 	my_menu = new_menu((ITEM **) items);
 	post_menu(my_menu);
+	box(stdscr, 0, 0);
 	refresh();
 
 	while(!end_game){
+		if(force_reload) {
+			// Ao voltar de uma opção, exibição do menu deve ser
+			// forçada
+			clear();
+			force_reload = 0;
+			menu_driver(my_menu, REQ_DOWN_ITEM);
+			menu_driver(my_menu, REQ_UP_ITEM);
+		}
 		c = getch();
 		switch(c){
 		case KEY_DOWN:
@@ -64,6 +73,7 @@ void menu()
 			menu_driver(my_menu, REQ_UP_ITEM);
 			break;
 		case 10: // Usuário selecionou opção pressionando enter
+			force_reload = 1;
 			cur = current_item(my_menu);
 			end_game = (index_exit == item_index(cur));
 			if(!end_game) execute_item(cur);

@@ -5,7 +5,7 @@
 # 					(marco.habitzreuter@ufrgs.br)
 #
 
-COMPILER_FLAGS = -lncurses -lmenu
+COMPILER_FLAGS = -lpanel -lmenu -lncurses
 WARNING_FLAGS = -Wall -Wextra
 SRC_FILES=$(wildcard *.c)
 

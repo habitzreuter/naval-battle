@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
+#include <ncurses.h>
 #include "game.h"
 #include "player.h"
 #include "ships.h"
@@ -17,33 +18,38 @@
 /*
  * Imprime tabuleiro na tela
  */
-void print_2d_char_array(size_t size, uint8_t *array)
+void print_2d_char_array(WINDOW *window, size_t size, uint8_t *array)
 {
+	size_t board_width = 2 * size + 7, board_height = size + 1;
+	size_t board_max_x, board_max_y;
+	size_t begin_x, begin_y;
 	char c;
 
-	for(uint8_t i = 0; i < size + 1; i++) {
+	getmaxyx(window, board_max_y, board_max_x);
+	begin_x = (board_max_x - board_width) / 2;
+	begin_y = (board_max_y - board_height) / 2;
 
-		// Imprime número da linha
-		if(i != 0) printf("%2d --> ", i);
-		else printf("       ");
+	// Imprime identificadores das colunas
+	for(uint8_t i = 0; i < size; i++)
+		mvwprintw(window, begin_y, begin_x + 2 * i + 7, "%c", (65 + i));
 
+	// 1 a mais porque identificação das colunas ocupa uma linha
+	for(uint8_t i = 1; i < size + 1; i++) {
+		mvwprintw(window, begin_y + i, begin_x, "%2d --> ", i);
 		for(uint8_t j = 0; j < size; j++) {
-			// Imprime letra da coluna na primeira linha
-			if(i == 0) printf("%2c ", (65 + j));
-			else {
-				// Le valor na célula do tabuleiro
-				c = *(array + MAX_BOARD_SIZE * (i - 1) + j);
-				printf("%2c ", c);
-			}
+			// Le valor na célula do tabuleiro
+			c = *(array + MAX_BOARD_SIZE * (i - 1) + j);
+			mvwprintw(window, begin_y + i, begin_x + 2 * j + 7, "%c ", c);
 		}
-		printf("\n");
 	}
+
+	wrefresh(window);
 }
 
 /**
  * Processa os dados do tabuleiro do jogador e imprime-o na tela
  */
-void print_player_board(size_t size, player_st player)
+void print_player_board(WINDOW *window, size_t size, player_st player)
 {
 	ship_st *ships;
 	char c;
@@ -71,13 +77,13 @@ void print_player_board(size_t size, player_st player)
 	}
 
 	// Imprime matriz processada na tela
-	print_2d_char_array(size, &(processed_board[0][0]));
+	print_2d_char_array(window, size, &(processed_board[0][0]));
 }
 
 /**
  * Processa os dados do tabuleiro do adversário e imprime-o na tela
  */
-void print_enemy_board(size_t size, player_st player, player_st enemy)
+void print_enemy_board(WINDOW *window, size_t size, player_st player, player_st enemy)
 {
 	ship_st *ships;
 	bool destroyed;
@@ -114,7 +120,7 @@ void print_enemy_board(size_t size, player_st player, player_st enemy)
 	}
 
 	// Imprime matriz processada na tela
-	print_2d_char_array(size, &(processed_board[0][0]));
+	print_2d_char_array(window, size, &(processed_board[0][0]));
 }
 
 /**
@@ -276,9 +282,44 @@ game_st game_new()
 	set_ships(&game.player1, game.board_size, AI);
 	set_ships(&game.player2, game.board_size, AI);
 
+	clear();
+	refresh();
+
+	WINDOW *board = newwin(LINES - 5, COLS / 2, 0, 0);
+	WINDOW *enemy_board = newwin(LINES - 5, COLS / 2, 0, COLS / 2);
+	WINDOW *info = newwin(5, COLS, LINES - 5, 0);
+	WINDOW *end = newwin(10, 60, (LINES - 10) / 2, (COLS - 60) / 2);
+	box(info, 0, 0);
+	box(board, 0, 0);
+	box(enemy_board, 0, 0);
+
+	print_player_board(board, game.board_size, game.player2);
+	print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
+
+	getch();
+	wclear(info);
+	wclear(board);
+	wclear(enemy_board);
+	wborder(info, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	wborder(board, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	wborder(enemy_board, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	wrefresh(info);
+	wrefresh(board);
+	wrefresh(enemy_board);
+	delwin(info);
+	delwin(board);
+	delwin(enemy_board);
+
+	wprintw(end, "Fim do jogo! Pressione qualquer tecla para retornar ao menu");
+	wrefresh(end);
+	delwin(end);
+	getch();
+
+	return game;
+
 	do {
-		print_player_board(game.board_size, game.player2);
-		print_enemy_board(game.board_size, game.player1, game.player2);
+		print_player_board(board, game.board_size, game.player2);
+		print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
 		shot_try(game.board_size, &game.player1, &game.player2, HUMAN);
 		shot_try(game.board_size, &game.player2, &game.player1, AI);
 		winner = game_end(&game.player1, &game.player2);
