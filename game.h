@@ -2,6 +2,7 @@
 #define __GAME_H__
 
 #include <stdbool.h>
+#include <ncurses.h>
 
 // Constantes de tamanhos máximos de vetores
 #define MAX_BOARD_SIZE	100
@@ -53,7 +54,7 @@ typedef struct {
 game_st game_new();
 void convert_coords_to_index(char, uint16_t, uint8_t*, uint8_t*);
 bool valid_coordinates(size_t, uint8_t, uint8_t);
-void print_board(size_t, player_st, bool);
+void print_player_board(WINDOW*, size_t, player_st);
 
 #endif
 

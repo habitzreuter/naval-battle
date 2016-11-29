@@ -276,27 +276,27 @@ game_st set_default_values()
 
 game_st game_new()
 {
-	game_st game = set_default_values();
-	uint8_t winner;
-
-	set_ships(&game.player1, game.board_size, AI);
-	set_ships(&game.player2, game.board_size, AI);
-
-	clear();
-	refresh();
-
 	WINDOW *board = newwin(LINES - 5, COLS / 2, 0, 0);
 	WINDOW *enemy_board = newwin(LINES - 5, COLS / 2, 0, COLS / 2);
 	WINDOW *info = newwin(5, COLS, LINES - 5, 0);
 	WINDOW *end = newwin(10, 60, (LINES - 10) / 2, (COLS - 60) / 2);
+	game_st game = set_default_values();
+	uint8_t winner;
+
+	clear();
+	refresh();
+
 	box(info, 0, 0);
 	box(board, 0, 0);
 	box(enemy_board, 0, 0);
+	wrefresh(info);
 
 	print_player_board(board, game.board_size, game.player2);
 	print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
 
-	getch();
+	set_ships(board, info, &game.player1, game.board_size);
+	//set_ships(&game.player2, game.board_size, AI);
+	
 	wclear(info);
 	wclear(board);
 	wclear(enemy_board);

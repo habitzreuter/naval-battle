@@ -13,6 +13,7 @@
 #include "ships.h"
 #include "player.h"
 #include "ai.h"
+#include "game.h"
 
 /**
  * Retorna string correspondente ao navio
@@ -78,21 +79,20 @@ bool ship_superposition(size_t ship_size, uint8_t *board, uint8_t row,
  * Verifica se coordenadas informadas pelo usuário não vão colocar o navio
  * fora dos limites do tabuleiro
  */
-bool valid_ship_bounds(size_t board_size, size_t ship_size, uint8_t row,
-		uint8_t col, bool direction)
+bool valid_ship_bounds(size_t board_size, ship_st ship)
 {
 	char status = false;
 	uint8_t final_row, final_col;
 
-	switch(direction) {
+	switch(ship.direction) {
 		case 1:
-			final_col = col;
-			final_row = row + ship_size;
+			final_col = ship.initial_column;
+			final_row = ship.initial_row + ship.size;
 			if(final_row <= board_size) status = true;
 			break;
 		case 0:
-			final_row = row;
-			final_col = col + ship_size;
+			final_row = ship.initial_row;
+			final_col = ship.initial_column + ship.size;
 			if(final_col <= board_size) status = true;
 			break;
 	}
@@ -111,7 +111,7 @@ bool valid_position(size_t board_size, uint8_t *board, ship_st ship)
 		direction = ship.direction;
 
 	return !ship_superposition(size, board, row, col, direction)
-		&& valid_ship_bounds(board_size, size, row, col, direction)
+		&& valid_ship_bounds(board_size, ship)
 		&& valid_coordinates(board_size, row, col);
 }
 
@@ -137,32 +137,24 @@ void update_board(uint8_t *board, ship_st ship, uint8_t ship_index)
 /*
  * Seleção da posição dos navios
  */
-void set_ships(player_st *player, size_t board_size, bool human)
+void set_ships(WINDOW *board, WINDOW *info, player_st *player, size_t board_size)
 {
 	uint8_t ship_count = MAX_SHIPS;
 	char ship_name[20];
+	bool human = (board != NULL && info != NULL), valid_coords;
+	ship_st *ship;
 
 	for(uint8_t i = 0; i < ship_count; i++) {
-		ship_st *ship = &(player->ships[i]);
-
-		do {
-			if(human) {
-				stringify_ship_type(ship->size, ship_name);
-				//print_board(board_size, &(player->board[0][0]), player->ships);
-
-				printf("Coordenada inicial para o %s (linha, coluna e direção): ", ship_name);
-				scan_ship_position(
-						&(ship->initial_row),
-						&(ship->initial_column),
-						&(ship->direction));
-			} else ai_generate_ship_coords(
-					board_size,
-					&(ship->initial_row),
-					&(ship->initial_column),
-					&(ship->direction));
-
-		} while(!valid_position(board_size, &(player->board[0][0]), *ship));
-
+		ship = &(player->ships[i]);
+		if(human) {
+			scan_ship_position(board, info, player, board_size, i);
+		} else {
+			do {
+				ai_generate_ship_coords(board_size, ship);
+				valid_coords = valid_position(board_size, &(player->board[0][0]), *ship);
+			} while (!valid_coords);
+		}
 		update_board(&(player->board[0][0]), *ship, i);
 	}
 }
+
