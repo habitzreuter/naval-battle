@@ -20,46 +20,41 @@ void scan_ship_position(WINDOW *board, WINDOW *info, player_st *player, size_t b
 {
 	player_st tmp_player; // Tabuleiro temporário, apenas para exibição
 	int c;
-	bool end, valid_coords;
+	bool end, valid_pos, valid_bounds, valid_coord;
 	ship_st *ship = &(player->ships[ship_index]);
+	ship_st tmp_ship; // Para validação da entrada
 
 	do {
 		end = false, tmp_player = *player;
 		update_board(&(tmp_player.board[0][0]), *ship, ship_index);
 		print_player_board(board, board_size, tmp_player);
-		valid_coords = valid_position(board_size, &(player->board[0][0]), *ship);
+		valid_pos = valid_position(board_size, &(player->board[0][0]), *ship);
 		c = getch();
+		tmp_ship = *ship;
 		switch(c) {
 		case KEY_DOWN:
-			ship->initial_row++;
-			if(!valid_ship_bounds(board_size, *ship) || !valid_coordinates(board_size, ship->initial_row, ship->initial_column))
-				ship->initial_row--;
+			tmp_ship.initial_row++;
 			break;
 		case KEY_UP:
-			ship->initial_row--;
-			if(!valid_ship_bounds(board_size, *ship) || !valid_coordinates(board_size, ship->initial_row, ship->initial_column))
-				ship->initial_row++;
+			tmp_ship.initial_row--;
 			break;
 		case KEY_LEFT:
-			ship->initial_column--;
-			if(!valid_ship_bounds(board_size, *ship) || !valid_coordinates(board_size, ship->initial_row, ship->initial_column))
-				ship->initial_column++;
+			tmp_ship.initial_column--;
 			break;
 		case KEY_RIGHT:
-			ship->initial_column++;
-			if(!valid_ship_bounds(board_size, *ship) || !valid_coordinates(board_size, ship->initial_row, ship->initial_column))
-				ship->initial_column--;
+			tmp_ship.initial_column++;
 			break;
 		case 'd':
-			ship->direction = !ship->direction;
-			if(!valid_ship_bounds(board_size, *ship) || !valid_coordinates(board_size, ship->initial_row, ship->initial_column))
-				ship->direction = !ship->direction;
+			tmp_ship.direction = !tmp_ship.direction;
 			break;
 		case 10: // ENTER
 			end = true;
 			break;
 		}
-	} while(!end || !valid_coords);
+		valid_bounds = valid_ship_bounds(board_size, tmp_ship);
+		valid_coord = valid_coordinates(board_size, tmp_ship.initial_row, tmp_ship.initial_column);
+		if(valid_bounds && valid_coord) *ship = tmp_ship;
+	} while(!end || !valid_pos);
 }
 
 /**
