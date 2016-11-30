@@ -138,15 +138,6 @@ bool valid_coordinates(size_t board_size, uint8_t row, uint8_t col)
 }
 
 /**
- * Converte coordenadas para índices da matriz do tabuleiro
- */
-void convert_coords_to_index(char tmp_col, uint16_t tmp_row, uint8_t *col, uint8_t *row)
-{
-	*col = (uint8_t) (toupper(tmp_col) - 65);
-	*row = (uint8_t) (tmp_row - 1);
-}
-
-/**
  * Realiza uma tentativa de tiro
  */
 void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player, player_st *enemy)
