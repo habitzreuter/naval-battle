@@ -54,7 +54,10 @@ void init()
 	keypad(stdscr, TRUE); // Habilita outras teclas, inclusive as setas
 	noecho(); // Desativa impressão dos caracteres inseridos pelo usuário
 	raw(); // Desativa buffer do teclado
-	//start_color(); // Habilita modo de cores da ncurses
 	curs_set(0); // Esconde cursor
+
+	start_color(); // Habilita modo de cores da ncurses
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_BLUE, COLOR_BLACK);
 }
 

@@ -39,7 +39,13 @@ void print_2d_char_array(WINDOW *window, size_t size, uint8_t *array)
 		for(uint8_t j = 0; j < size; j++) {
 			// Le valor na célula do tabuleiro
 			c = *(array + MAX_BOARD_SIZE * (i - 1) + j);
+
+			if(c == '~') wattron(window, COLOR_PAIR(2));
+			wattron(window, A_BOLD);
+
 			mvwprintw(window, begin_y + i, begin_x + 2 * j + 7, "%c ", c);
+
+			wattroff(window, A_BOLD | COLOR_PAIR(2));
 		}
 	}
 
@@ -236,10 +242,10 @@ uint8_t game_end(player_st *player1, player_st *player2)
  */
 game_st set_default_values()
 {
-	ship_st aircraft_carrier = {5, 0, 0, 0, 0};
-	ship_st destroyer = {4, 0, 0, 0, 0};
-	ship_st cruzer= {2, 0, 0, 0, 0};
-	ship_st submarine = {1, 0, 0, 0, 0};
+	ship_st aircraft_carrier = {5, 0, {0, 0, 0}};
+	ship_st destroyer = {4, 0, {0, 0, 0}};
+	ship_st cruzer= {2, 0, {0, 0, 0}};
+	ship_st submarine = {1, 0, {0, 0, 0}};
 
 	player_st player;
 	player.score = 0;
@@ -293,6 +299,9 @@ game_st game_new()
 
 	print_player_board(board, game.board_size, game.player2);
 	print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
+
+	mvwprintw(info, 1, 2, "Use as setas para posicionar seus navios no tabuleiro");
+	wrefresh(info);
 
 	set_ships(board, info, &game.player1, game.board_size);
 	//set_ships(&game.player2, game.board_size, AI);

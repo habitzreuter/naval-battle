@@ -51,10 +51,10 @@ char get_ship_type(enum ships type)
  * Verifica se as coordenadas informadas pelo usuário não farão o navio se
  * sobrepor a outro navio já colocado
  */
-bool ship_superposition(size_t ship_size, uint8_t *board, uint8_t row,
-		uint8_t col, bool direction)
+bool ship_superposition(size_t ship_size, uint8_t *board, ship_st ship)
 {
-	bool status = true;
+	uint8_t row = ship.pos.row, col = ship.pos.col;
+	bool status = true, direction = ship.pos.direction;
 	uint8_t empty_cell = ship_size;
 	uint8_t cell_content;
 
@@ -84,15 +84,15 @@ bool valid_ship_bounds(size_t board_size, ship_st ship)
 	char status = false;
 	uint8_t final_row, final_col;
 
-	switch(ship.direction) {
+	switch(ship.pos.direction) {
 	case 1:
-		final_col = ship.initial_column;
-		final_row = ship.initial_row + ship.size;
+		final_col = ship.pos.col;
+		final_row = ship.pos.row + ship.size;
 		if(final_row <= board_size) status = true;
 		break;
 	case 0:
-		final_row = ship.initial_row;
-		final_col = ship.initial_column + ship.size;
+		final_row = ship.pos.row;
+		final_col = ship.pos.col + ship.size;
 		if(final_col <= board_size) status = true;
 		break;
 	}
@@ -106,13 +106,9 @@ bool valid_ship_bounds(size_t board_size, ship_st ship)
  */
 bool valid_position(size_t board_size, uint8_t *board, ship_st ship)
 {
-	size_t size = ship.size;
-	uint8_t row = ship.initial_row, col = ship.initial_column,
-		direction = ship.direction;
-
-	return !ship_superposition(size, board, row, col, direction)
+	return !ship_superposition(ship.size, board, ship)
 		&& valid_ship_bounds(board_size, ship)
-		&& valid_coordinates(board_size, row, col);
+		&& valid_coordinates(board_size, ship.pos.row, ship.pos.col);
 }
 
 /**
@@ -120,9 +116,9 @@ bool valid_position(size_t board_size, uint8_t *board, ship_st ship)
  */
 void update_board(uint8_t *board, ship_st ship, uint8_t ship_index)
 {
-	uint8_t in_row = ship.initial_row, in_col = ship.initial_column;
+	uint8_t in_row = ship.pos.row, in_col = ship.pos.col;
 
-	switch(ship.direction) {
+	switch(ship.pos.direction) {
 	case 0:
 		for(uint8_t i = 0; i < ship.size; i++)
 			*(board + MAX_BOARD_SIZE * in_row + in_col + i) = ship_index;
@@ -146,8 +142,9 @@ void set_ships(WINDOW *board, WINDOW *info, player_st *player, size_t board_size
 
 	for(uint8_t i = 0; i < ship_count; i++) {
 		ship = &(player->ships[i]);
+		stringify_ship_type(ship->size, ship_name);
 		if(human) {
-			scan_ship_position(board, info, player, board_size, i);
+			scan_ship_position(board, info, player, board_size, i, ship_name);
 		} else {
 			do {
 				ai_generate_ship_coords(board_size, ship);

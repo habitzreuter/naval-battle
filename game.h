@@ -22,6 +22,8 @@
 #define PLAYER	false
 #define ENEMY	true
 
+#define A_ERROR COLOR_PAIR(1)
+
 enum ships {
 	AIRCRAFT_CARRIER = 5,
 	DESTROYER = 4,
@@ -30,10 +32,14 @@ enum ships {
 };
 
 typedef struct {
-	size_t size; // Tamanho e tipo do navio
-	uint8_t initial_row, initial_column,
+	uint8_t row, col;
+	bool direction;
+} position_st;
+
+typedef struct {
+	size_t size, // Tamanho e tipo do navio
 		hits; // Quantos tiros atingiram o navio
-	bool direction; // 1: vertical, 0: horizontal
+	position_st pos;
 } ship_st;
 
 typedef struct {

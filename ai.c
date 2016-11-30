@@ -28,7 +28,7 @@ void ai_generate_coords(uint8_t max, uint8_t *r, uint8_t *c)
  */
 void ai_generate_ship_coords(uint8_t max, ship_st *ship)
 {
-	ai_generate_coords(max, &(ship->initial_row), &(ship->initial_column));
-	ship->direction = rand() % 2; // Gera valor TRUE ou FALSE
+	ai_generate_coords(max, &(ship->pos.row), &(ship->pos.col));
+	ship->pos.direction = rand() % 2; // Gera valor TRUE ou FALSE
 }
 
