@@ -83,16 +83,25 @@ void scan_ship_position(WINDOW *board, WINDOW *info, player_st *player, size_t b
 }
 
 /**
- * Lê coordenadas de tiro
+ * Chama função que faz leitura da coordenada de tiro e valida essa entrada
  */
-void scan_shot_position(uint8_t *row, uint8_t *col)
+void scan_shot_position(WINDOW *board, WINDOW *info, player_st *player, player_st *enemy, uint8_t board_size, position_st *pos)
 {
-	uint16_t tmp_row;
-	char tmp_col;
+	bool end, valid_coords;
+	position_st tmp_pos = {0, 0, 0};
+	player_st tmp_player; // Tabuleiro temporário, apenas para exibição
 
-	scanf("%hu %c", &tmp_row, &tmp_col);
-	__fpurge(stdin);
+	do {
+		end = false;
+		tmp_player = *player;
+		// Navio falso, apenas para exibir o 'X' no tabuleiro
+		tmp_player.enemy_board[tmp_pos.row][tmp_pos.col] = MAX_SHIPS;
+		print_enemy_board(board, board_size, tmp_player, *enemy);
+		valid_coords = valid_coordinates(board_size, tmp_pos.row, tmp_pos.col);
+		end = get_position(&(tmp_pos));
+	} while(!end || !valid_coords);
 
-	convert_coords_to_index(tmp_col, tmp_row, col, row);
+	*pos = tmp_pos;
+
 }
 

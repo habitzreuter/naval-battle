@@ -137,7 +137,7 @@ void set_ships(WINDOW *board, WINDOW *info, player_st *player, size_t board_size
 {
 	uint8_t ship_count = MAX_SHIPS;
 	char ship_name[20];
-	bool human = (board != NULL && info != NULL), valid_coords;
+	bool human = !(board == NULL && info == NULL), valid_coords;
 	ship_st *ship;
 
 	for(uint8_t i = 0; i < ship_count; i++) {

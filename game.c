@@ -149,22 +149,22 @@ void convert_coords_to_index(char tmp_col, uint16_t tmp_row, uint8_t *col, uint8
 /**
  * Realiza uma tentativa de tiro
  */
-void shot_try(size_t board_size, player_st *player, player_st *enemy, bool human)
+void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player, player_st *enemy)
 {
-	uint8_t row, col, index;
+	uint8_t index;
 	bool ship_hits, ship_size, destroyed;
+	bool human = (board != NULL && info != NULL);
+	position_st pos;
 
-	// Le e valida coordenadas
+	// Le/gera coordenadas
 	do {
-		if(human) {
-			printf("%s, insira as coordenadas do tiro (linha e coluna): ", player->name);
-			scan_shot_position(&row, &col);
-		} else ai_generate_coords(board_size, &row, &col);
-	} while(!valid_coordinates(board_size, row, col));
+		if(human) scan_shot_position(board, info, player, enemy, board_size, &pos);
+		else ai_generate_coords(board_size, &(pos.row), &(pos.col));
+	} while(!valid_coordinates(board_size, pos.row, pos.col));
 
-	if(enemy->board[row][col] != NO_SHIP) { // Caso atinja um navio inimigo
-		player->enemy_board[row][col] = enemy->board[row][col];
-		index = enemy->board[row][col];
+	if(enemy->board[pos.row][pos.col] != NO_SHIP) { // Caso atinja um navio inimigo
+		player->enemy_board[pos.row][pos.col] = enemy->board[pos.row][pos.col];
+		index = enemy->board[pos.row][pos.col];
 		enemy->ships[index].hits++;
 
 		// Tiro certo dá um ponto e uma munição
@@ -178,7 +178,7 @@ void shot_try(size_t board_size, player_st *player, player_st *enemy, bool human
 
 	} else {
 		// Se errou o tiro, armazena que não há navio nessa posição
-		player->enemy_board[row][col] = MISSED_SHOT;
+		player->enemy_board[pos.row][pos.col] = MISSED_SHOT;
 		player->ammo--;
 	}
 }
@@ -272,6 +272,7 @@ game_st set_default_values()
 	player.ships[9] = submarine;
 	player.ships[10] = submarine;
 	player.ships[11] = submarine;
+	player.ships[12] = submarine;
 
 	game_st game = {0, 15, player, player};
 	strcpy(game.player1.name, "Jogador humano");
@@ -303,8 +304,22 @@ game_st game_new()
 	mvwprintw(info, 1, 2, "Use as setas para posicionar seus navios no tabuleiro");
 	wrefresh(info);
 
-	set_ships(board, info, &game.player1, game.board_size);
-	//set_ships(&game.player2, game.board_size, AI);
+	set_ships(NULL, NULL, &game.player1, game.board_size);
+	set_ships(NULL, NULL, &game.player2, game.board_size);
+
+	mvwprintw(info, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro");
+	wrefresh(info);
+
+	do {
+		print_player_board(board, game.board_size, game.player1);
+		print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
+		shot_try(enemy_board, info, game.board_size, &(game.player1), &(game.player2));
+		//winner = game_end(&game.player1, &game.player2);
+	} while(winner == 0);
+
+	// Após o fim do jogo, soma munições restantes ao score do jogador
+	game.player1.score += game.player1.ammo;
+	game.player2.score += game.player2.ammo;
 	
 	wclear(info);
 	wclear(board);
@@ -325,24 +340,5 @@ game_st game_new()
 	getch();
 
 	return game;
-
-	do {
-		print_player_board(board, game.board_size, game.player2);
-		print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
-		shot_try(game.board_size, &game.player1, &game.player2, HUMAN);
-		shot_try(game.board_size, &game.player2, &game.player1, AI);
-		winner = game_end(&game.player1, &game.player2);
-	} while(winner == 0);
-
-	// Após o fim do jogo, soma munições restantes ao score do jogador
-	game.player1.score += game.player1.ammo;
-	game.player2.score += game.player2.ammo;
-
-	printf("\nGanhador: %d\n", winner);
-	printf("Pontuação de %s: %d\n", game.player1.name, game.player1.score);
-	printf("Pontuação de %s: %d\n", game.player2.name, game.player2.score);
-
-	return game;
-
 }
 
