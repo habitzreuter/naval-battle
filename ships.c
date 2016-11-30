@@ -136,15 +136,13 @@ void update_board(uint8_t *board, ship_st ship, uint8_t ship_index)
 void set_ships(WINDOW *board, WINDOW *info, player_st *player, size_t board_size)
 {
 	uint8_t ship_count = MAX_SHIPS;
-	char ship_name[20];
 	bool human = !(board == NULL && info == NULL), valid_coords;
 	ship_st *ship;
 
 	for(uint8_t i = 0; i < ship_count; i++) {
 		ship = &(player->ships[i]);
-		stringify_ship_type(ship->size, ship_name);
 		if(human) {
-			scan_ship_position(board, info, player, board_size, i, ship_name);
+			scan_ship_position(board, info, player, board_size, i);
 		} else {
 			do {
 				ai_generate_ship_coords(board_size, ship);

@@ -15,120 +15,6 @@
 #include "ships.h"
 #include "ai.h"
 
-/*
- * Imprime tabuleiro na tela
- */
-void print_2d_char_array(WINDOW *window, size_t size, uint8_t *array)
-{
-	size_t board_width = 2 * size + 7, board_height = size + 1;
-	size_t board_max_x, board_max_y;
-	size_t begin_x, begin_y;
-	char c;
-
-	getmaxyx(window, board_max_y, board_max_x);
-	begin_x = (board_max_x - board_width) / 2;
-	begin_y = (board_max_y - board_height) / 2;
-
-	// Imprime identificadores das colunas
-	for(uint8_t i = 0; i < size; i++)
-		mvwprintw(window, begin_y, begin_x + 2 * i + 7, "%c", (65 + i));
-
-	// 1 a mais porque identificação das colunas ocupa uma linha
-	for(uint8_t i = 1; i < size + 1; i++) {
-		mvwprintw(window, begin_y + i, begin_x, "%2d --> ", i);
-		for(uint8_t j = 0; j < size; j++) {
-			// Le valor na célula do tabuleiro
-			c = *(array + MAX_BOARD_SIZE * (i - 1) + j);
-
-			if(c == '~') wattron(window, COLOR_PAIR(2));
-			wattron(window, A_BOLD);
-
-			mvwprintw(window, begin_y + i, begin_x + 2 * j + 7, "%c ", c);
-
-			wattroff(window, A_BOLD | COLOR_PAIR(2));
-		}
-	}
-
-	wrefresh(window);
-}
-
-/**
- * Processa os dados do tabuleiro do jogador e imprime-o na tela
- */
-void print_player_board(WINDOW *window, size_t size, player_st player)
-{
-	ship_st *ships;
-	char c;
-	uint8_t processed_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE] = {{0}},
-		content, *board;
-	uint32_t offset;
-
-	ships = &(player.ships[0]);
-	board = &(player.board[0][0]);
-
-	// Processa tabuleiro, convertendo-o para matriz de caracteres
-	for(uint8_t i = 0; i < size; i++) {
-		for(uint8_t j = 0; j < size; j++) {
-			// Le valor na célula do tabuleiro
-			offset = MAX_BOARD_SIZE * i + j;
-			content = *(board + offset);
-
-			// Verifica os códigos de status
-			if(content == NO_SHIP) c = '~';
-			// Não é código de status, então é navio
-			else c = get_ship_type(ships[content].size);
-
-			*(&(processed_board[0][0]) + offset) = c;
-		}
-	}
-
-	// Imprime matriz processada na tela
-	print_2d_char_array(window, size, &(processed_board[0][0]));
-}
-
-/**
- * Processa os dados do tabuleiro do adversário e imprime-o na tela
- */
-void print_enemy_board(WINDOW *window, size_t size, player_st player, player_st enemy)
-{
-	ship_st *ships;
-	bool destroyed;
-	char c;
-	uint8_t processed_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE] = {{0}},
-		content, hits, *board, ship_size;
-
-	ships = &(enemy.ships[0]);
-	board = &(player.enemy_board[0][0]);
-
-	// Processa tabuleiro, convertendo-o para matriz de caracteres
-	for(uint8_t i = 0; i < size; i++) {
-		for(uint8_t j = 0; j < size; j++) {
-			// Le valor na célula do tabuleiro
-			content = *(board + MAX_BOARD_SIZE * i + j);
-
-			// Verifica os códigos de status
-			if(content == NOT_SHOT) c = '~';
-			else if(content == MISSED_SHOT) c = '*';
-			else {
-				// Não é código de status, então é navio
-				hits = ships[content].hits;
-				ship_size = ships[content].size;
-				destroyed = (hits == ship_size);
-
-				if(destroyed)
-					c = get_ship_type(ships[content].size);
-				else
-					c = 'X';
-			}
-
-			*(&(processed_board[0][0]) + MAX_BOARD_SIZE * i + j) = c;
-		}
-	}
-
-	// Imprime matriz processada na tela
-	print_2d_char_array(window, size, &(processed_board[0][0]));
-}
-
 /**
  * Testa se coordenadas estão dentro dos limites do tabuleiro
  */
@@ -148,9 +34,9 @@ void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player,
 	position_st pos;
 
 	// Le/gera coordenadas
-	do {
-		if(human) scan_shot_position(board, info, player, enemy, board_size, &pos);
-		else ai_generate_coords(board_size, &(pos.row), &(pos.col));
+	if(human) scan_shot_position(board, info, player, enemy, board_size, &pos);
+	else do {
+		ai_generate_coords(board_size, &(pos.row), &(pos.col));
 	} while(!valid_coordinates(board_size, pos.row, pos.col));
 
 	if(enemy->board[pos.row][pos.col] != NO_SHIP) { // Caso atinja um navio inimigo
@@ -263,7 +149,6 @@ game_st set_default_values()
 	player.ships[9] = submarine;
 	player.ships[10] = submarine;
 	player.ships[11] = submarine;
-	player.ships[12] = submarine;
 
 	game_st game = {0, 15, player, player};
 	strcpy(game.player1.name, "Jogador humano");
@@ -281,31 +166,24 @@ game_st game_new()
 	game_st game = set_default_values();
 	uint8_t winner;
 
-	clear();
-	refresh();
+	clear(), refresh();
 
-	box(info, 0, 0);
-	box(board, 0, 0);
-	box(enemy_board, 0, 0);
-	wrefresh(info);
-
-	print_player_board(board, game.board_size, game.player2);
-	print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
+	box(info, 0, 0), box(board, 0, 0), box(enemy_board, 0, 0);
+	wrefresh(info), wrefresh(board), wrefresh(enemy_board);
 
 	mvwprintw(info, 1, 2, "Use as setas para posicionar seus navios no tabuleiro");
 	wrefresh(info);
 
-	set_ships(NULL, NULL, &game.player1, game.board_size);
+	set_ships(board, info, &game.player1, game.board_size);
 	set_ships(NULL, NULL, &game.player2, game.board_size);
 
 	mvwprintw(info, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro");
 	wrefresh(info);
 
 	do {
-		print_player_board(board, game.board_size, game.player1);
-		print_enemy_board(enemy_board, game.board_size, game.player1, game.player2);
 		shot_try(enemy_board, info, game.board_size, &(game.player1), &(game.player2));
-		//winner = game_end(&game.player1, &game.player2);
+		shot_try(NULL, NULL, game.board_size, &(game.player2), &(game.player1));
+		winner = game_end(&game.player1, &game.player2);
 	} while(winner == 0);
 
 	// Após o fim do jogo, soma munições restantes ao score do jogador

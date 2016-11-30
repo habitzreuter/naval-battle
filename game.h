@@ -43,7 +43,7 @@ typedef struct {
 	char name[MAX_NAME_SIZE];
 	uint16_t score;
 	uint16_t ammo;
-	ship_st ships[MAX_SHIPS + 1];
+	ship_st ships[MAX_SHIPS];
 	uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE];
 	uint8_t enemy_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE];
 } player_st;
