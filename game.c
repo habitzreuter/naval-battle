@@ -160,47 +160,51 @@ game_st game_new()
 {
 	WINDOW *board = newwin(LINES - 5, COLS / 2, 0, 0);
 	WINDOW *enemy_board = newwin(LINES - 5, COLS / 2, 0, COLS / 2);
-	WINDOW *info = newwin(5, COLS, LINES - 5, 0);
+	WINDOW *messages = newwin(5, COLS / 2 , LINES - 5, 0);
+	WINDOW *info = newwin(5, COLS / 2 , LINES - 5, COLS / 2);
 	WINDOW *end = newwin(10, 60, (LINES - 10) / 2, (COLS - 60) / 2);
 	game_st game = set_default_values();
 	uint8_t winner;
 
 	clear(), refresh();
 
-	box(info, 0, 0), box(board, 0, 0), box(enemy_board, 0, 0);
-	wrefresh(info), wrefresh(board), wrefresh(enemy_board);
+	box(info, 0, 0), box(board, 0, 0), box(enemy_board, 0, 0), box(messages, 0, 0);
+	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
 
-	mvwprintw(info, 1, 2, "Use as setas para posicionar seus navios no tabuleiro");
-	wrefresh(info);
+	mvwprintw(messages, 1, 2, "Use as setas para posicionar seus navios no tabuleiro.");
+	wrefresh(messages);
 
-	set_ships(board, info, &game.player1, game.board_size);
+	//set_ships(board, messages, &game.player1, game.board_size);
+	set_ships(NULL, NULL, &game.player1, game.board_size);
 	set_ships(NULL, NULL, &game.player2, game.board_size);
 
-	mvwprintw(info, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro");
-	wrefresh(info);
+	mvwprintw(messages, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro.");
+	wrefresh(messages);
 
 	do {
-		shot_try(enemy_board, info, game.board_size, &(game.player1), &(game.player2));
+		shot_try(enemy_board, messages, game.board_size, &(game.player1), &(game.player2));
 		shot_try(NULL, NULL, game.board_size, &(game.player2), &(game.player1));
 		winner = game_end(&game.player1, &game.player2);
+		wclear(info), box(info, 0, 0), wrefresh(info);
+		mvwprintw(info, 1, 2, "Pontuação do %s: %d", game.player1.name, game.player1.score);
+		mvwprintw(info, 2, 2, "Munições restantes: %d", game.player1.ammo);
+		mvwprintw(info, 1, 40, "Pontuação do %s: %d", game.player2.name, game.player2.score);
+		mvwprintw(info, 2, 40, "Munições restantes: %d", game.player2.ammo);
+		wrefresh(info);
 	} while(winner == 0);
 
 	// Após o fim do jogo, soma munições restantes ao score do jogador
 	game.player1.score += game.player1.ammo;
 	game.player2.score += game.player2.ammo;
 	
-	wclear(info);
-	wclear(board);
-	wclear(enemy_board);
+	// Remove janelas
+	wclear(info), wclear(board), wclear(enemy_board), wclear(messages);
 	wborder(info, ' ', ' ', ' ',' ',' ',' ',' ',' ');
 	wborder(board, ' ', ' ', ' ',' ',' ',' ',' ',' ');
 	wborder(enemy_board, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-	wrefresh(info);
-	wrefresh(board);
-	wrefresh(enemy_board);
-	delwin(info);
-	delwin(board);
-	delwin(enemy_board);
+	wborder(messages, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
+	delwin(info), delwin(board), delwin(enemy_board), delwin(messages);
 
 	wprintw(end, "Fim do jogo! Pressione qualquer tecla para retornar ao menu");
 	wrefresh(end);
