@@ -28,9 +28,8 @@ bool valid_coordinates(size_t board_size, uint8_t row, uint8_t col)
  */
 void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player, player_st *enemy)
 {
-	uint8_t index;
-	bool ship_hits, ship_size, destroyed;
-	bool human = (board != NULL && info != NULL);
+	uint8_t index, ship_hits, ship_size;
+	bool human = (board != NULL && info != NULL), destroyed;
 	position_st pos;
 
 	// Le/gera coordenadas
@@ -40,6 +39,7 @@ void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player,
 	} while(!valid_coordinates(board_size, pos.row, pos.col));
 
 	if(enemy->board[pos.row][pos.col] != NO_SHIP) { // Caso atinja um navio inimigo
+		// Armazena índice do navio acertado
 		player->enemy_board[pos.row][pos.col] = enemy->board[pos.row][pos.col];
 		index = enemy->board[pos.row][pos.col];
 		enemy->ships[index].hits++;
@@ -52,7 +52,6 @@ void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player,
 		ship_size = enemy->ships[index].size;
 		destroyed = (ship_hits == ship_size);
 		if(destroyed) player->ammo += 3, player->score += 2;
-
 	} else {
 		// Se errou o tiro, armazena que não há navio nessa posição
 		player->enemy_board[pos.row][pos.col] = MISSED_SHOT;
