@@ -22,19 +22,13 @@ int main()
 	score_record_st highscores[HIGHSCORE_COUNT];
 
 	init();
-	menu();
 
 	// Le ranking dos 10 melhores jogadores
 	hs = fopen("highscores.bin", "rb+");
 	if(hs == NULL) printf("Erro ao abrir highscores.bin\n");
 	else read_highscores(hs, highscores);
 
-	//game_st game = game_new();
-	//game_st game;
-	//game.player1.score = 80;
-	//strcpy(&(game.player1.name[0]), "Jogador3");
-
-	//update_ranking(hs, game.player1, highscores);
+	menu(hs, highscores);
 
 	fclose(hs);
 	endwin();

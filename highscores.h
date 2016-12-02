@@ -13,6 +13,7 @@ typedef struct {
 
 void read_highscores(FILE*, score_record_st*);
 void update_ranking(FILE*, player_st, score_record_st[]);
+void show_ranking(score_record_st []);
 
 #endif
 

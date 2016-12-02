@@ -11,25 +11,31 @@
 #include <menu.h>
 #include <stdlib.h>
 #include "game.h"
+#include "highscores.h"
 
 /**
  * Recebe um item do menu e executa a função correspondente a ele
  */
-void execute_item(ITEM *item)
+void execute_item(ITEM *item, FILE *highscore, score_record_st highscore_data[HIGHSCORE_COUNT])
 {
+	game_st game;
+
 	switch(item_index(item)) {
 	case 0: // Novo jogo
-		game_new();
+		game = game_new();
+		update_ranking(highscore, game.player1, highscore_data);
 		break;
 	case 1: // Exibe ranking de pontuações
+		show_ranking(highscore_data);
 		break;
 	}
+
 }
 
 /**
  * Cria menu e faz a leitura da entrada do usuário
  */
-void menu()
+void menu(FILE *highscore, score_record_st highscore_data[HIGHSCORE_COUNT])
 {
 	ITEM **items, *cur;
 	int menu_op_count, end_game = 0, c, index_exit, force_reload = 0;
@@ -76,7 +82,7 @@ void menu()
 			force_reload = 1;
 			cur = current_item(my_menu);
 			end_game = (index_exit == item_index(cur));
-			if(!end_game) execute_item(cur);
+			if(!end_game) execute_item(cur, highscore, highscore_data);
 			break;
 		}
 	}

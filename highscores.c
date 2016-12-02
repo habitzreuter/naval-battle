@@ -74,3 +74,31 @@ void update_ranking(FILE *hs, player_st player, score_record_st highscores[HIGHS
 	}
 }
 
+void show_ranking(score_record_st highscores[HIGHSCORE_COUNT])
+{
+	WINDOW *ranking = newwin(LINES / 2, COLS / 2, LINES / 4, COLS / 4);
+	uint8_t i;
+	size_t board_max_x, board_max_y;
+
+	clear(), refresh();
+	getmaxyx(ranking, board_max_y, board_max_x);
+	board_max_x = board_max_x; // Não utilizada, apenas está aqui para chamar a função
+
+	box(ranking, 0, 0);
+	wrefresh(ranking);
+	wattron(ranking, A_BOLD);
+	mvwprintw(ranking, 1, 1, "Ranking de jogadores");
+	wattroff(ranking, A_BOLD);
+
+	for(i = 0; i < HIGHSCORE_COUNT && highscores[i].score != 0; i++) {
+		mvwprintw(ranking, i + 3, 1, "%dº - %s: %d pontos", i + 1, highscores[i].name, highscores[i].score);
+	}
+
+	mvwprintw(ranking, board_max_y - 2, 2, "Pressione qualquer tecla para retornar ao menu");
+	wrefresh(ranking);
+
+	getch();
+	wborder(ranking, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+	wrefresh(ranking);
+	delwin(ranking);
+}
