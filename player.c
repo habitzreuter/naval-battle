@@ -51,34 +51,44 @@ void print_2d_char_array(WINDOW *window, size_t size, char *array)
 	wrefresh(window);
 }
 
-/**
- * Gera matriz de caracteres a partir do tabuleiro do jogador
- */
-void gen_player_board(size_t board_size, player_st player, char *destination)
+void print_player_board(WINDOW *window, size_t board_size, player_st player, player_st enemy)
 {
 	ship_st *ships;
 	char c;
-	uint8_t content, *board;
+	uint8_t content, *board, *enemy_board;
 	uint32_t offset;
+	size_t board_width = 2 * board_size + 7, board_height = board_size + 1;
+	size_t board_max_x, board_max_y, begin_x, begin_y;
+	bool position_hit;
 
-	ships = &(player.ships[0]);
-	board = &(player.board[0][0]);
+	getmaxyx(window, board_max_y, board_max_x);
+	begin_x = (board_max_x - board_width) / 2;
+	begin_y = (board_max_y - board_height) / 2;
 
-	// Processa tabuleiro, convertendo-o para matriz de caracteres
+	ships = &(player.ships[0]), board = &(player.board[0][0]);
+	enemy_board = &(enemy.enemy_board[0][0]);
+
+	for(uint8_t i = 0; i < board_size; i++)
+		mvwprintw(window, begin_y, begin_x + 2 * i + 7, "%c", (65 + i));
+
 	for(uint8_t i = 0; i < board_size; i++) {
 		for(uint8_t j = 0; j < board_size; j++) {
-			// Le valor na célula do tabuleiro
 			offset = MAX_BOARD_SIZE * i + j;
 			content = *(board + offset);
-
-			// Verifica os códigos de status
-			if(content == NO_SHIP) c = '~';
-			// Não é código de status, então é navio
-			else c = get_ship_type(ships[content].size);
-
-			*(destination +  offset) = c;
+			if(content == NO_SHIP) {
+				c = '~';
+				wattron(window, COLOR_PAIR(2));
+			} else {
+				c = get_ship_type(ships[content].size);
+				position_hit = ((*(enemy_board + offset) != NOT_SHOT) && (*(enemy_board + offset) != MISSED_SHOT));
+				if(position_hit) wattron(window, COLOR_PAIR(1));
+			}
+			wattron(window, A_BOLD);
+			mvwprintw(window, begin_y + i, begin_x + 2 * j + 7, "%c ", c);
+			wattroff(window, A_BOLD | COLOR_PAIR(1) | COLOR_PAIR(2));
 		}
 	}
+	wrefresh(window);
 }
 
 /**
@@ -155,13 +165,13 @@ bool get_position(position_st *pos)
 /**
  * Chama função de leitura de coordenada e faz a consistência da leitura
  */
-void scan_ship_position(WINDOW *board, WINDOW *info, player_st *player, size_t board_size, uint8_t ship_index)
+void scan_ship_position(WINDOW *board, WINDOW *info, player_st *player, player_st enemy, size_t board_size, uint8_t ship_index)
 {
 	player_st tmp_player; // Tabuleiro temporário, apenas para exibição
 	bool end, valid_pos, valid_bounds, valid_coord;
 	ship_st *ship = &(player->ships[ship_index]);
 	ship_st tmp_ship; // Para validação da entrada
-	char ship_name[MAX_NAME_SIZE], tmp_board[MAX_BOARD_SIZE][MAX_BOARD_SIZE];
+	char ship_name[MAX_NAME_SIZE];
 
 	stringify_ship_type(ship->size, ship_name);
 
@@ -169,8 +179,7 @@ void scan_ship_position(WINDOW *board, WINDOW *info, player_st *player, size_t b
 		end = false, tmp_player = *player;
 
 		update_board(&(tmp_player.board[0][0]), *ship, ship_index);
-		gen_player_board(board_size, tmp_player, &(tmp_board[0][0]));
-		print_2d_char_array(board, board_size, &(tmp_board[0][0]));
+		print_player_board(board, board_size, *player, enemy);
 		valid_pos = valid_position(board_size, &(player->board[0][0]), *ship);
 
 		tmp_ship = *ship;

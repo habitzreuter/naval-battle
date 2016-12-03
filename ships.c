@@ -133,7 +133,7 @@ void update_board(uint8_t *board, ship_st ship, uint8_t ship_index)
 /*
  * Seleção da posição dos navios
  */
-void set_ships(WINDOW *board, WINDOW *info, player_st *player, size_t board_size)
+void set_ships(WINDOW *board, WINDOW *info, player_st *player, player_st enemy, size_t board_size)
 {
 	uint8_t ship_count = MAX_SHIPS;
 	bool human = !(board == NULL && info == NULL), valid_coords;
@@ -142,7 +142,7 @@ void set_ships(WINDOW *board, WINDOW *info, player_st *player, size_t board_size
 	for(uint8_t i = 0; i < ship_count; i++) {
 		ship = &(player->ships[i]);
 		if(human) {
-			scan_ship_position(board, info, player, board_size, i);
+			scan_ship_position(board, info, player, enemy, board_size, i);
 		} else {
 			do {
 				ai_generate_ship_coords(board_size, ship);

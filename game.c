@@ -175,8 +175,8 @@ game_st game_new()
 	wrefresh(messages);
 
 	//set_ships(board, messages, &game.player1, game.board_size);
-	set_ships(NULL, NULL, &game.player1, game.board_size);
-	set_ships(NULL, NULL, &game.player2, game.board_size);
+	set_ships(NULL, NULL, &game.player1, game.player2, game.board_size);
+	set_ships(NULL, NULL, &game.player2, game.player2, game.board_size);
 
 	mvwprintw(messages, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro.");
 	wrefresh(messages);
@@ -185,6 +185,7 @@ game_st game_new()
 		shot_try(enemy_board, messages, game.board_size, &(game.player1), &(game.player2));
 		shot_try(NULL, NULL, game.board_size, &(game.player2), &(game.player1));
 		winner = game_end(&game.player1, &game.player2);
+		print_player_board(board, game.board_size, game.player1, game.player2);
 		wclear(info), box(info, 0, 0), wrefresh(info);
 		mvwprintw(info, 1, 2, "Pontuação do %s: %d", game.player1.name, game.player1.score);
 		mvwprintw(info, 2, 2, "Munições restantes: %d", game.player1.ammo);

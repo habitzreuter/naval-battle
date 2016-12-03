@@ -57,8 +57,6 @@ typedef struct {
 game_st game_new();
 void convert_coords_to_index(char, uint16_t, uint8_t*, uint8_t*);
 bool valid_coordinates(size_t, uint8_t, uint8_t);
-void print_player_board(WINDOW*, size_t, player_st);
-void print_enemy_board(WINDOW*, size_t, player_st, player_st);
 
 #endif
 
