@@ -78,11 +78,11 @@ void show_ranking(score_record_st highscores[HIGHSCORE_COUNT])
 {
 	WINDOW *ranking = newwin(LINES / 2, COLS / 2, LINES / 4, COLS / 4);
 	uint8_t i;
-	size_t board_max_x, board_max_y;
+	size_t ranking_max_x, ranking_max_y;
 
 	clear(), refresh();
-	getmaxyx(ranking, board_max_y, board_max_x);
-	board_max_x = board_max_x; // Não utilizada, apenas está aqui para chamar a função
+	getmaxyx(ranking, ranking_max_y, ranking_max_x);
+	ranking_max_x = ranking_max_x; // Não utilizada, apenas está aqui para chamar a função
 
 	box(ranking, 0, 0);
 	wrefresh(ranking);
@@ -94,7 +94,7 @@ void show_ranking(score_record_st highscores[HIGHSCORE_COUNT])
 		mvwprintw(ranking, i + 3, 1, "%dº - %s: %d pontos", i + 1, highscores[i].name, highscores[i].score);
 	}
 
-	mvwprintw(ranking, board_max_y - 2, 2, "Pressione qualquer tecla para retornar ao menu");
+	mvwprintw(ranking, ranking_max_y - 2, 2, "Pressione qualquer tecla para retornar ao menu");
 	wrefresh(ranking);
 
 	getch();
