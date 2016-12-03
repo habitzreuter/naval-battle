@@ -98,6 +98,7 @@ void show_ranking(score_record_st highscores[HIGHSCORE_COUNT])
 	wrefresh(ranking);
 
 	getch();
+	wclear(ranking);
 	wborder(ranking, ' ', ' ', ' ',' ',' ',' ',' ',' ');
 	wrefresh(ranking);
 	delwin(ranking);
