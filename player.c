@@ -18,7 +18,7 @@
  */
 void print_2d_char_array(WINDOW *window, size_t board_size, char array[MAX_BOARD_SIZE][MAX_BOARD_SIZE])
 {
-	size_t board_width = 2 * board_size + 7, board_height = board_size + 1;
+	size_t board_width = 2 * board_size + 3, board_height = board_size + 1;
 	size_t board_max_x, board_max_y;
 	size_t begin_x, begin_y;
 	char c;
@@ -29,11 +29,11 @@ void print_2d_char_array(WINDOW *window, size_t board_size, char array[MAX_BOARD
 
 	// Imprime identificadores das colunas
 	for(uint8_t i = 0; i < board_size; i++)
-		mvwprintw(window, begin_y, begin_x + 2 * i + 7, "%c", (65 + i));
+		mvwprintw(window, begin_y, begin_x + 2 * i + 3, "%c", (65 + i));
 
 	// 1 a mais porque identificação das colunas ocupa uma linha
 	for(uint8_t i = 0; i < board_size; i++) {
-		mvwprintw(window, begin_y + i + 1, begin_x, "%2d --> ", i);
+		mvwprintw(window, begin_y + i + 1, begin_x, "%02d ", i + 1);
 		for(uint8_t j = 0; j < board_size; j++) {
 			c = array[i][j];
 
@@ -41,7 +41,7 @@ void print_2d_char_array(WINDOW *window, size_t board_size, char array[MAX_BOARD
 			if(c == '~') wattron(window, COLOR_PAIR(2));
 			wattron(window, A_BOLD);
 
-			mvwprintw(window, begin_y + i + 1, begin_x + 2 * j + 7, "%c ", c);
+			mvwprintw(window, begin_y + i + 1, begin_x + 2 * j + 3, "%c ", c);
 
 			wattroff(window, A_BOLD | COLOR_PAIR(2));
 		}
@@ -55,7 +55,7 @@ void print_player_board(WINDOW *window, size_t board_size, player_st player, pla
 	ship_st *ships;
 	char c;
 	uint8_t content;
-	size_t board_width = 2 * board_size + 7, board_height = board_size + 1;
+	size_t board_width = 2 * board_size + 3, board_height = board_size + 1;
 	size_t board_max_x, board_max_y, begin_x, begin_y;
 	bool position_hit;
 
@@ -66,9 +66,10 @@ void print_player_board(WINDOW *window, size_t board_size, player_st player, pla
 	ships = &(player.ships[0]);
 
 	for(uint8_t i = 0; i < board_size; i++)
-		mvwprintw(window, begin_y, begin_x + 2 * i + 7, "%c", (65 + i));
+		mvwprintw(window, begin_y, begin_x + 2 * i + 3, "%c", (65 + i));
 
 	for(uint8_t i = 0; i < board_size; i++) {
+		mvwprintw(window, begin_y + i + 1, begin_x, "%02d ", i + 1);
 		for(uint8_t j = 0; j < board_size; j++) {
 			content = player.board[i][j];
 			if(content == NO_SHIP) {
@@ -80,7 +81,7 @@ void print_player_board(WINDOW *window, size_t board_size, player_st player, pla
 				if(position_hit) wattron(window, COLOR_PAIR(1));
 			}
 			wattron(window, A_BOLD);
-			mvwprintw(window, begin_y + i, begin_x + 2 * j + 7, "%c ", c);
+			mvwprintw(window, begin_y + i + 1, begin_x + 2 * j + 3, "%c ", c);
 			wattroff(window, A_BOLD | COLOR_PAIR(1) | COLOR_PAIR(2));
 		}
 	}
@@ -174,7 +175,7 @@ void scan_ship_position(WINDOW *board, WINDOW *info, player_st *player, player_s
 		end = false, tmp_player = *player;
 
 		update_board(tmp_player.board, *ship, ship_index);
-		print_player_board(board, board_size, *player, enemy);
+		print_player_board(board, board_size, tmp_player, enemy);
 		valid_pos = valid_position(board_size, player->board, *ship);
 
 		tmp_ship = *ship;

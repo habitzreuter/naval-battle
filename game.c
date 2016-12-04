@@ -174,8 +174,7 @@ game_st game_new()
 	mvwprintw(messages, 1, 2, "Use as setas para posicionar seus navios no tabuleiro.");
 	wrefresh(messages);
 
-	//set_ships(board, messages, &game.player1, game.board_size);
-	set_ships(NULL, NULL, &game.player1, game.player2, game.board_size);
+	set_ships(board, messages, &game.player1, game.player2, game.board_size);
 	set_ships(NULL, NULL, &game.player2, game.player2, game.board_size);
 
 	mvwprintw(messages, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro.");
