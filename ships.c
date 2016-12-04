@@ -51,7 +51,7 @@ char get_ship_type(enum ships type)
  * Verifica se as coordenadas informadas pelo usuário não farão o navio se
  * sobrepor a outro navio já colocado
  */
-bool ship_superposition(size_t ship_size, uint8_t *board, ship_st ship)
+bool ship_superposition(size_t ship_size, uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], ship_st ship)
 {
 	uint8_t row = ship.pos.row, col = ship.pos.col;
 	bool status = true, direction = ship.pos.direction;
@@ -61,10 +61,10 @@ bool ship_superposition(size_t ship_size, uint8_t *board, ship_st ship)
 	for(uint8_t i = 0; i < ship_size; i++) {
 		switch(direction) {
 		case 0:
-			cell_content = *(board + MAX_BOARD_SIZE * row + col + i);
+			cell_content = board[row][col + i];
 			break;
 		case 1:
-			cell_content = *(board + MAX_BOARD_SIZE * (row + i) + col);
+			cell_content = board[row + i][col];
 			break;
 		}
 		if(cell_content != NO_SHIP) empty_cell--;
@@ -104,7 +104,7 @@ bool valid_ship_bounds(size_t board_size, ship_st ship)
  * Verifica se coordenadas especificadas para um determinado navio são
  * válidas
  */
-bool valid_position(size_t board_size, uint8_t *board, ship_st ship)
+bool valid_position(size_t board_size, uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], ship_st ship)
 {
 	return !ship_superposition(ship.size, board, ship)
 		&& valid_ship_bounds(board_size, ship)
@@ -114,18 +114,18 @@ bool valid_position(size_t board_size, uint8_t *board, ship_st ship)
 /**
  * Insere navio no tabuleiro
  */
-void update_board(uint8_t *board, ship_st ship, uint8_t ship_index)
+void update_board(uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], ship_st ship, uint8_t ship_index)
 {
 	uint8_t in_row = ship.pos.row, in_col = ship.pos.col;
 
 	switch(ship.pos.direction) {
 	case 0:
 		for(uint8_t i = 0; i < ship.size; i++)
-			*(board + MAX_BOARD_SIZE * in_row + in_col + i) = ship_index;
+			board[in_row][in_col + i] = ship_index;
 		break;
 	case 1:
 		for(uint8_t i = 0; i < ship.size; i++)
-			*(board + MAX_BOARD_SIZE * (in_row + i) + in_col) = ship_index;
+			board[in_row + i][in_col] = ship_index;
 		break;
 	}
 }
@@ -146,10 +146,10 @@ void set_ships(WINDOW *board, WINDOW *info, player_st *player, player_st enemy, 
 		} else {
 			do {
 				ai_generate_ship_coords(board_size, ship);
-				valid_coords = valid_position(board_size, &(player->board[0][0]), *ship);
+				valid_coords = valid_position(board_size, player->board, *ship);
 			} while (!valid_coords);
 		}
-		update_board(&(player->board[0][0]), *ship, i);
+		update_board(player->board, *ship, i);
 	}
 }
 
