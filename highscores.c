@@ -84,15 +84,13 @@ void show_ranking(score_record_st highscores[HIGHSCORE_COUNT])
 	getmaxyx(ranking, ranking_max_y, ranking_max_x);
 	ranking_max_x = ranking_max_x; // Não utilizada, apenas está aqui para chamar a função
 
-	box(ranking, 0, 0);
-	wrefresh(ranking);
+	box(ranking, 0, 0), wrefresh(ranking);
 	wattron(ranking, A_BOLD);
 	mvwprintw(ranking, 1, 1, "Ranking de jogadores");
 	wattroff(ranking, A_BOLD);
 
-	for(i = 0; i < HIGHSCORE_COUNT && highscores[i].score != 0; i++) {
-		mvwprintw(ranking, i + 3, 1, "%dº - %s: %d pontos", i + 1, highscores[i].name, highscores[i].score);
-	}
+	for(i = 0; i < HIGHSCORE_COUNT && highscores[i].score != 0; i++)
+		mvwprintw(ranking, i + 3, 1, "%2dº - %s: %d pontos", i + 1, highscores[i].name, highscores[i].score);
 
 	mvwprintw(ranking, ranking_max_y - 2, 2, "Pressione qualquer tecla para retornar ao menu");
 	wrefresh(ranking);
@@ -100,6 +98,5 @@ void show_ranking(score_record_st highscores[HIGHSCORE_COUNT])
 	getch();
 	wclear(ranking);
 	wborder(ranking, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-	wrefresh(ranking);
-	delwin(ranking);
+	wrefresh(ranking), delwin(ranking);
 }
