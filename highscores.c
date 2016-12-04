@@ -42,35 +42,20 @@ void read_highscores(FILE *source, score_record_st *highscores)
 void update_ranking(FILE *hs, player_st player, score_record_st highscores[HIGHSCORE_COUNT])
 {
 	bool file_changed = false;
-	uint32_t write_count;
 
 	// Verifica se pontuação do jogador é maior do que alguma do ranking
 	for(uint8_t i = 0; (i < HIGHSCORE_COUNT) && !(file_changed); i++) {
 		if(player.score > highscores[i].score) {
 			// Move o ranking um elemento para trás antes de inserir
 			// o novo jogador
-			for(uint8_t j = (HIGHSCORE_COUNT - 1); j > i; j--) {
+			for(uint8_t j = (HIGHSCORE_COUNT - 1); j > i; j--)
 				highscores[j] = highscores[j-1];
-			}
 
 			highscores[i].score = player.score;
 			strcpy(highscores[i].name, player.name);
-			file_changed = true;
 
+			fwrite(highscores, sizeof(score_record_st), HIGHSCORE_COUNT, hs);
 		}
-	}
-
-	// Se for maior, atualiza arquivo
-	if(file_changed) {
-		rewind(hs);
-		write_count = fwrite(
-				highscores,
-				sizeof(score_record_st),
-				HIGHSCORE_COUNT,
-				hs
-				);
-		if(write_count != HIGHSCORE_COUNT)
-			printf("Erro ao escrever pontuação no arquivo!\n");
 	}
 }
 
