@@ -133,22 +133,22 @@ void update_board(uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], ship_st ship, u
 /*
  * Seleção da posição dos navios
  */
-void set_ships(WINDOW *board, WINDOW *info, player_st *player, player_st enemy, size_t board_size)
+void set_ships(WINDOW *board, WINDOW *messages, player_st *player, player_st enemy, size_t board_size)
 {
 	uint8_t ship_count = MAX_SHIPS;
-	bool human = !(board == NULL && info == NULL), valid_coords;
+	bool human = !(board == NULL && messages == NULL), valid_coords;
 	ship_st *ship;
 
 	for(uint8_t i = 0; i < ship_count; i++) {
 		ship = &(player->ships[i]);
 		if(human) {
-			scan_ship_position(board, info, player, enemy, board_size, i);
-		} else {
-			do {
-				ai_generate_ship_coords(board_size, ship);
-				valid_coords = valid_position(board_size, player->board, *ship);
-			} while (!valid_coords);
-		}
+			mvwprintw(messages, 1, 2, "%s, use as setas para posicionar seus navios no tabuleiro.", player->name);
+			wrefresh(messages);
+			scan_ship_position(board, messages, player, enemy, board_size, i);
+		} else do {
+			ai_generate_ship_coords(board_size, ship);
+			valid_coords = valid_position(board_size, player->board, *ship);
+		} while (!valid_coords);
 		update_board(player->board, *ship, i);
 	}
 }

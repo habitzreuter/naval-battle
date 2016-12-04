@@ -26,15 +26,18 @@ bool valid_coordinates(size_t board_size, uint8_t row, uint8_t col)
 /**
  * Realiza uma tentativa de tiro
  */
-void shot_try(WINDOW *board, WINDOW *info, size_t board_size, player_st *player, player_st *enemy)
+void shot_try(WINDOW *board, WINDOW *messages, size_t board_size, player_st *player, player_st *enemy)
 {
 	uint8_t index, ship_hits, ship_size;
-	bool human = (board != NULL && info != NULL), destroyed;
+	bool human = (board != NULL && messages != NULL), destroyed;
 	position_st pos;
 
 	// Le/gera coordenadas
-	if(human) scan_shot_position(board, info, player, enemy, board_size, &pos);
-	else do {
+	if(human) {
+		mvwprintw(messages, 1, 2, "%s, use as setas para selecionar o local de tiro no tabuleiro.", player->name);
+		wrefresh(messages);
+		scan_shot_position(board, messages, player, enemy, board_size, &pos);
+	}else do {
 		ai_generate_coords(board_size, &(pos.row), &(pos.col));
 	} while(!valid_coordinates(board_size, pos.row, pos.col));
 
@@ -149,7 +152,7 @@ game_st set_default_values()
 	player.ships[10] = submarine;
 	player.ships[11] = submarine;
 
-	game_st game = {0, 15, player, player};
+	game_st game = {0, 15, 0, player, player};
 	strcpy(game.player1.name, "Jogador humano");
 	strcpy(game.player2.name, "Computador");
 
@@ -158,6 +161,7 @@ game_st set_default_values()
 
 game_st game_new()
 {
+	WINDOW *begin= newwin(5, 100, (LINES - 5) / 2, (COLS - 100) / 2);
 	WINDOW *board = newwin(LINES - 5, COLS / 2, 0, 0);
 	WINDOW *enemy_board = newwin(LINES - 5, COLS / 2, 0, COLS / 2);
 	WINDOW *messages = newwin(5, COLS / 2 , LINES - 5, 0);
@@ -168,23 +172,44 @@ game_st game_new()
 
 	clear(), refresh();
 
+	box(begin, 0, 0);
+	mvwprintw(begin, 1, 1, "Insira o nome do jogador 1: ");
+	wrefresh(begin);
+	echo();
+	wscanw(begin, "%s", game.player1.name);
+	mvwprintw(begin, 2, 1, "Insira o nome do jogador 2 (deixe em branco para jogar contra o computador): ");
+	wrefresh(begin);
+	wscanw(begin, "%s", game.player2.name);
+	noecho();
+	wclear(begin), wrefresh(begin), delwin(begin);
+
+	if(game.player2.name[0] == '\0') { // String está vazia: é contra o PC
+		strcpy(game.player2.name, "Computador");
+		game.vs_computer = true;
+	}
+
 	box(info, 0, 0), box(board, 0, 0), box(enemy_board, 0, 0), box(messages, 0, 0);
 	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
 
-	mvwprintw(messages, 1, 2, "Use as setas para posicionar seus navios no tabuleiro.");
-	wrefresh(messages);
 
 	set_ships(board, messages, &game.player1, game.player2, game.board_size);
-	set_ships(NULL, NULL, &game.player2, game.player2, game.board_size);
+	if(game.vs_computer)
+		set_ships(NULL, NULL, &game.player2, game.player2, game.board_size);
+	else
+		set_ships(board, messages, &game.player2, game.player1, game.board_size);
 
-	mvwprintw(messages, 1, 2, "Use as setas para selecionar o local de tiro no tabuleiro.");
-	wrefresh(messages);
 
 	do {
-		shot_try(enemy_board, messages, game.board_size, &(game.player1), &(game.player2));
-		shot_try(NULL, NULL, game.board_size, &(game.player2), &(game.player1));
-		winner = game_end(&game.player1, &game.player2);
 		print_player_board(board, game.board_size, game.player1, game.player2);
+		shot_try(enemy_board, messages, game.board_size, &(game.player1), &(game.player2));
+
+		if(game.vs_computer) {
+			shot_try(NULL, NULL, game.board_size, &(game.player2), &(game.player1));
+		} else {
+			print_player_board(board, game.board_size, game.player2, game.player1);
+			shot_try(enemy_board, messages, game.board_size, &(game.player2), &(game.player1));
+		}
+		winner = game_end(&game.player1, &game.player2);
 		wclear(info), box(info, 0, 0), wrefresh(info);
 		mvwprintw(info, 1, 2, "Pontuação do %s: %d", game.player1.name, game.player1.score);
 		mvwprintw(info, 2, 2, "Munições restantes: %d", game.player1.ammo);
@@ -206,7 +231,15 @@ game_st game_new()
 	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
 	delwin(info), delwin(board), delwin(enemy_board), delwin(messages);
 
-	wprintw(end, "Fim do jogo! Pressione qualquer tecla para retornar ao menu");
+	if(winner == 1)
+		wprintw(end, "%s venceu!\nPressione qualquer tecla para retornar ao menu", game.player1.name);
+	else
+		wprintw(end, "%s venceu!\nPressione qualquer tecla para retornar ao menu", game.player2.name);
+
+	// Pontuação do computador não deve ir para o ranking, então
+	// reseta para o valor mínimo
+	if(game.vs_computer) game.player2.score = 0;
+
 	wrefresh(end);
 	delwin(end);
 	getch();

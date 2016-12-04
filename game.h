@@ -51,11 +51,11 @@ typedef struct {
 typedef struct {
 	uint32_t time;
 	size_t board_size;
+	bool vs_computer;
 	player_st player1, player2;
 } game_st;
 
 game_st game_new();
-void convert_coords_to_index(char, uint16_t, uint8_t*, uint8_t*);
 bool valid_coordinates(size_t, uint8_t, uint8_t);
 
 #endif
