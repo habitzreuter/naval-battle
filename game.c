@@ -152,7 +152,7 @@ game_st set_default_values()
 	player.ships[10] = submarine;
 	player.ships[11] = submarine;
 
-	game_st game = {0, 15, 0, player, player};
+	game_st game = {15, 0, player, player};
 	strcpy(game.player1.name, "Jogador humano");
 	strcpy(game.player2.name, "");
 

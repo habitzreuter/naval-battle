@@ -16,9 +16,6 @@
 #define MISSED_SHOT	255
 #define NOT_SHOT	NO_SHIP
 
-#define HUMAN	true
-#define AI	false
-
 #define A_ERROR COLOR_PAIR(1)
 
 enum ships {
@@ -49,7 +46,6 @@ typedef struct {
 } player_st;
 
 typedef struct {
-	uint32_t time;
 	size_t board_size;
 	bool vs_computer;
 	player_st player1, player2;
