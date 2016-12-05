@@ -117,18 +117,25 @@ uint8_t game_end(player_st *player1, player_st *player2)
 
 /**
  * Inicializa estruturas
- * TODO: Usar isso para configurar dificuldade do jogo
  */
-game_st set_default_values()
+game_st set_default_values(uint8_t board_size)
 {
+	uint8_t ship_index, ship_count = 0;
 	ship_st aircraft_carrier = {5, 0, {0, 0, 0}};
 	ship_st destroyer = {4, 0, {0, 0, 0}};
 	ship_st cruzer= {2, 0, {0, 0, 0}};
 	ship_st submarine = {1, 0, {0, 0, 0}};
 
+	// Regra de três usando o tabuleiro de tamanho 15 como base para
+	// definir quantidade de navios em outros níveis
+	uint8_t aircraft_count = board_size / 15;
+	uint8_t destroyer_count = 2 * board_size / 15;
+	uint8_t cruzer_count = 4 * board_size / 15;
+	uint8_t submarine_count = 5 * board_size / 15;
+
 	player_st player;
 	player.score = 0;
-	player.ammo = 15;
+	player.ammo = board_size;
 
 	// Inicializa tabuleiros
 	for(uint8_t i = 0; i < MAX_BOARD_SIZE; i++) {
@@ -138,21 +145,24 @@ game_st set_default_values()
 		}
 	}
 
-	// Inicializa navios
-	player.ships[0] = aircraft_carrier;
-	player.ships[1] = destroyer;
-	player.ships[2] = destroyer;
-	player.ships[3] = cruzer;
-	player.ships[4] = cruzer;
-	player.ships[5] = cruzer;
-	player.ships[6] = cruzer;
-	player.ships[7] = submarine;
-	player.ships[8] = submarine;
-	player.ships[9] = submarine;
-	player.ships[10] = submarine;
-	player.ships[11] = submarine;
+	ship_index = 0;
+	ship_count += aircraft_count;
+	for(; ship_index < ship_count; ship_index++)
+		player.ships[ship_index] = aircraft_carrier;
 
-	game_st game = {15, 0, player, player};
+	ship_count += destroyer_count;
+	for(; ship_index < ship_count; ship_index++)
+		player.ships[ship_index] = destroyer;
+
+	ship_count += cruzer_count;
+	for(; ship_index < ship_count; ship_index++)
+		player.ships[ship_index] = cruzer;
+
+	ship_count += submarine_count;
+	for(; ship_index < ship_count; ship_index++)
+		player.ships[ship_index] = submarine;
+
+	game_st game = {board_size, false, ship_count, player, player};
 	strcpy(game.player1.name, "Jogador humano");
 	strcpy(game.player2.name, "");
 
@@ -167,17 +177,23 @@ game_st game_new()
 	WINDOW *messages = newwin(5, COLS / 2 , LINES - 5, 0);
 	WINDOW *info = newwin(5, COLS / 2 , LINES - 5, COLS / 2);
 	WINDOW *end = newwin(10, 60, (LINES - 10) / 2, (COLS - 60) / 2);
-	game_st game = set_default_values();
+	game_st game;
 	uint8_t winner;
+	int board_size;
 
 	clear(), refresh();
 
+	// Le nomes dos jogadores e nível de dificuldade desejado
 	box(begin, 0, 0);
-	mvwprintw(begin, 1, 1, "Insira o nome do jogador 1: ");
-	wrefresh(begin);
 	echo();
+	mvwprintw(begin, 1, 1, "Insira o tamanho desejado do tabuleiro: ");
+	wrefresh(begin);
+	wscanw(begin, "%d", &board_size);
+	game = set_default_values(board_size);
+	mvwprintw(begin, 2, 1, "Insira o nome do jogador 1: ");
+	wrefresh(begin);
 	wscanw(begin, "%s", game.player1.name);
-	mvwprintw(begin, 2, 1, "Insira o nome do jogador 2 (deixe em branco para jogar contra o computador): ");
+	mvwprintw(begin, 3, 1, "Insira o nome do jogador 2 (deixe em branco para jogar contra o computador): ");
 	wrefresh(begin);
 	wscanw(begin, "%s", game.player2.name);
 	noecho();
@@ -191,19 +207,19 @@ game_st game_new()
 	box(info, 0, 0), box(board, 0, 0), box(enemy_board, 0, 0), box(messages, 0, 0);
 	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
 
-	set_ships(board, messages, &game.player1, game.player2, game.board_size);
+	set_ships(board, messages, &game.player1, game.player2, game.ship_count, game.board_size);
 	if(game.vs_computer)
-		set_ships(NULL, NULL, &game.player2, game.player1, game.board_size);
+		set_ships(NULL, NULL, &game.player2, game.player1, game.ship_count, game.board_size);
 	else
-		set_ships(board, messages, &game.player2, game.player1, game.board_size);
+		set_ships(board, messages, &game.player2, game.player1, game.ship_count, game.board_size);
 
 	do {
 		print_player_board(board, game.board_size, game.player1, game.player2);
 		shot_try(enemy_board, messages, game.board_size, &(game.player1), &(game.player2));
 
-		if(game.vs_computer) {
+		if(game.vs_computer)
 			shot_try(NULL, NULL, game.board_size, &(game.player2), &(game.player1));
-		} else {
+		else {
 			print_player_board(board, game.board_size, game.player2, game.player1);
 			shot_try(enemy_board, messages, game.board_size, &(game.player2), &(game.player1));
 		}

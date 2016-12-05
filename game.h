@@ -6,7 +6,7 @@
 
 // Constantes de tamanhos máximos de vetores
 #define MAX_BOARD_SIZE	100
-#define MAX_SHIPS	12
+#define MAX_SHIPS	50
 #define MAX_NAME_SIZE	31
 
 // Constantes do tabuleiro do jogador
@@ -48,6 +48,7 @@ typedef struct {
 typedef struct {
 	size_t board_size;
 	bool vs_computer;
+	uint8_t ship_count;
 	player_st player1, player2;
 } game_st;
 

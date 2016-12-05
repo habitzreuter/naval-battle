@@ -133,9 +133,8 @@ void update_board(uint8_t board[MAX_BOARD_SIZE][MAX_BOARD_SIZE], ship_st ship, u
 /*
  * Seleção da posição dos navios
  */
-void set_ships(WINDOW *board, WINDOW *messages, player_st *player, player_st enemy, size_t board_size)
+void set_ships(WINDOW *board, WINDOW *messages, player_st *player, player_st enemy, uint8_t ship_count, size_t board_size)
 {
-	uint8_t ship_count = MAX_SHIPS;
 	bool human = !(board == NULL && messages == NULL), valid_coords;
 	ship_st *ship;
 
