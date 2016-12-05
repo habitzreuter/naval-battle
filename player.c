@@ -13,19 +13,25 @@
 #include "game.h"
 #include "ships.h"
 
+// Macros que calculam tamanho necessário para imprimir um determinado número de elementos
+#define calc_width(board_size) 2 * board_size + 3
+#define calc_height(board_size) board_size + 1
+
 /*
  * Imprime tabuleiro na tela
  */
 void print_2d_char_array(WINDOW *window, size_t board_size, char array[MAX_BOARD_SIZE][MAX_BOARD_SIZE])
 {
-	size_t board_width = 2 * board_size + 3, board_height = board_size + 1;
-	size_t board_max_x, board_max_y;
-	size_t begin_x, begin_y;
+	// Espaços em branco e identificação das linhas
+	size_t board_w = calc_width(board_size);
+	// Identificação das colunas ocupa uma linha
+	size_t board_h = calc_height(board_size);
+	size_t board_max_x, board_max_y, begin_x, begin_y;
 	char c;
 
 	getmaxyx(window, board_max_y, board_max_x);
-	begin_x = (board_max_x - board_width) / 2;
-	begin_y = (board_max_y - board_height) / 2;
+	begin_x = (board_max_x - board_w) / 2;
+	begin_y = (board_max_y - board_h) / 2;
 
 	// Imprime identificadores das colunas
 	for(uint8_t i = 0; i < board_size; i++)
@@ -42,11 +48,9 @@ void print_2d_char_array(WINDOW *window, size_t board_size, char array[MAX_BOARD
 			wattron(window, A_BOLD);
 
 			mvwprintw(window, begin_y + i + 1, begin_x + 2 * j + 3, "%c ", c);
-
 			wattroff(window, A_BOLD | COLOR_PAIR(2));
 		}
 	}
-
 	wrefresh(window);
 }
 
@@ -55,18 +59,18 @@ void print_player_board(WINDOW *window, size_t board_size, player_st player, pla
 	ship_st *ships;
 	char c;
 	uint8_t content;
-	size_t board_width = 2 * board_size + 3, board_height = board_size + 1;
+	size_t board_w = calc_width(board_size), board_h = calc_height(board_size);
 	size_t board_max_x, board_max_y, begin_x, begin_y;
 	bool position_hit;
 
 	getmaxyx(window, board_max_y, board_max_x);
-	begin_x = (board_max_x - board_width) / 2;
-	begin_y = (board_max_y - board_height) / 2;
+	begin_x = (board_max_x - board_w) / 2;
+	begin_y = (board_max_y - board_h) / 2;
 
 	ships = &(player.ships[0]);
 
 	for(uint8_t i = 0; i < board_size; i++)
-		mvwprintw(window, begin_y, begin_x + 2 * i + 3, "%c", (65 + i));
+		mvwprintw(window, begin_y, begin_x + calc_width(i), "%c", (65 + i));
 
 	for(uint8_t i = 0; i < board_size; i++) {
 		mvwprintw(window, begin_y + i + 1, begin_x, "%02d ", i + 1);
@@ -81,7 +85,7 @@ void print_player_board(WINDOW *window, size_t board_size, player_st player, pla
 				if(position_hit) wattron(window, COLOR_PAIR(1));
 			}
 			wattron(window, A_BOLD);
-			mvwprintw(window, begin_y + i + 1, begin_x + 2 * j + 3, "%c ", c);
+			mvwprintw(window, begin_y + calc_height(i), begin_x + calc_width(j), "%c ", c);
 			wattroff(window, A_BOLD | COLOR_PAIR(1) | COLOR_PAIR(2));
 		}
 	}

@@ -112,7 +112,6 @@ uint8_t game_end(player_st *player1, player_st *player2)
 	} else winner = 0;
 
 	return winner;
-
 }
 
 /**
