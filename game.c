@@ -154,7 +154,7 @@ game_st set_default_values()
 
 	game_st game = {0, 15, 0, player, player};
 	strcpy(game.player1.name, "Jogador humano");
-	strcpy(game.player2.name, "Computador");
+	strcpy(game.player2.name, "");
 
 	return game;
 }
@@ -191,13 +191,11 @@ game_st game_new()
 	box(info, 0, 0), box(board, 0, 0), box(enemy_board, 0, 0), box(messages, 0, 0);
 	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
 
-
 	set_ships(board, messages, &game.player1, game.player2, game.board_size);
 	if(game.vs_computer)
-		set_ships(NULL, NULL, &game.player2, game.player2, game.board_size);
+		set_ships(NULL, NULL, &game.player2, game.player1, game.board_size);
 	else
 		set_ships(board, messages, &game.player2, game.player1, game.board_size);
-
 
 	do {
 		print_player_board(board, game.board_size, game.player1, game.player2);
@@ -231,14 +229,18 @@ game_st game_new()
 	wrefresh(info), wrefresh(board), wrefresh(enemy_board), wrefresh(messages);
 	delwin(info), delwin(board), delwin(enemy_board), delwin(messages);
 
-	if(winner == 1)
-		wprintw(end, "%s venceu!\nPressione qualquer tecla para retornar ao menu", game.player1.name);
-	else
-		wprintw(end, "%s venceu!\nPressione qualquer tecla para retornar ao menu", game.player2.name);
-
 	// Pontuação do computador não deve ir para o ranking, então
 	// reseta para o valor mínimo
 	if(game.vs_computer) game.player2.score = 0;
+
+	if(winner == 1)
+		wprintw(end, "%s venceu!\nPressione qualquer tecla para retornar ao menu", game.player1.name);
+	else {
+		wprintw(end, "%s venceu!\nPressione qualquer tecla para retornar ao menu", game.player2.name);
+		// Jogador 1 é o que é armazenado no ranking
+		game.player1 = game.player2;
+	}
+
 
 	wrefresh(end);
 	delwin(end);

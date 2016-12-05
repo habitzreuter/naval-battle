@@ -17,21 +17,22 @@
  * Le arquivo do ranking e preenche as posições não registradas com uma struct
  * vazia
  */
-void read_highscores(FILE *source, score_record_st *highscores)
+void read_highscores(FILE *source, score_record_st highscores[HIGHSCORE_COUNT])
 {
 	uint8_t r_count;
 	score_record_st record, empty_record = {"", 0};
 
+	rewind(source);
 	for(uint8_t i = 0; i < HIGHSCORE_COUNT; i++) {
 		// Busca um registro do arquivo
 		r_count = fread(&record, sizeof(score_record_st), 1, source);
 
 		// Se conseguiu ler, armazena registro no vetor
-		if(r_count == 1) *(highscores + i) = record;
+		if(r_count == 1) highscores[i] = record;
 
 		// Se não leu nada, já chegou no final do arquivo, então
 		// armazena registro vazio para o resto dos índices do vetor
-		else *(highscores + i) = empty_record;
+		else highscores[i] = empty_record;
 	}
 }
 
@@ -42,6 +43,7 @@ void read_highscores(FILE *source, score_record_st *highscores)
 void update_ranking(FILE *hs, player_st player, score_record_st highscores[HIGHSCORE_COUNT])
 {
 	bool file_changed = false;
+	uint32_t write_count;
 
 	// Verifica se pontuação do jogador é maior do que alguma do ranking
 	for(uint8_t i = 0; (i < HIGHSCORE_COUNT) && !(file_changed); i++) {
@@ -53,9 +55,21 @@ void update_ranking(FILE *hs, player_st player, score_record_st highscores[HIGHS
 
 			highscores[i].score = player.score;
 			strcpy(highscores[i].name, player.name);
-
-			fwrite(highscores, sizeof(score_record_st), HIGHSCORE_COUNT, hs);
+			file_changed = true;
 		}
+	}
+
+	// Se for maior, atualiza arquivo
+	if(file_changed) {
+		rewind(hs);
+		write_count = fwrite(
+				highscores,
+				sizeof(score_record_st),
+				HIGHSCORE_COUNT,
+				hs
+				);
+		if(write_count != HIGHSCORE_COUNT)
+			printf("Erro ao escrever pontuação no arquivo!\n");
 	}
 }
 
