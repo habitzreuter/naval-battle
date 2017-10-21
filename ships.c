@@ -1,10 +1,13 @@
 /**
  * Batalha Naval
  *
- * Autor: Marco Antônio habitzreuter	(marco.habitzreuter@ufrgs.br)
- *					(mahabitzreuter@inf.ufrgs.br)
+ * Copyright (C) 2017 Marco Antônio Habitzreuter (marco.habitzreuter@ufrgs.br)
+ *
+ * Para detalhes sobre a licença, ver "main.c" e "LICENSE"
+ *
  *
  * Funções relacionadas à manipulação dos navios
+ *
  */
 
 #include <stdio.h>

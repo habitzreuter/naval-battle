@@ -1,3 +1,12 @@
+/**
+ * Batalha Naval
+ *
+ * Copyright (C) 2017 Marco Antônio Habitzreuter (marco.habitzreuter@ufrgs.br)
+ *
+ * Para detalhes sobre a licença, ver "main.c" e "LICENSE"
+ *
+ */
+
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 

@@ -1,8 +1,9 @@
 #
 # Batalha Naval
 #
-# Autor: Marco Antônio Habitzreuter 	(mahabitzreuter@inf.ufrgs.br)
-# 					(marco.habitzreuter@ufrgs.br)
+# Copyright (C) 2017 Marco Antônio Habitzreuter (marco.habitzreuter@ufrgs.br)
+#
+# Para detalhes sobre a licença, ver "main.c" e "LICENSE"
 #
 
 COMPILER_FLAGS = -lpanel -lmenu -lncurses
